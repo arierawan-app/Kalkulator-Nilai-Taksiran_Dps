@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kertas Kerja Analisis Penentuan Nilai Taksiran BMN</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        mckinsey: {
+                            green: '#00594C',
+                            dark: '#003B31',
+                            light: '#E6EFEA',
+                            accent: '#00A98F'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body { background-color: #F8F9FA; color: #1A1A1A; }
+        .card { background: white; border: 1px solid #E5E7EB; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .input-field { width: 100%; border: 1px solid #D1D5DB; padding: 0.5rem; border-radius: 4px; font-size: 0.875rem; transition: border-color 0.2s; }
+        .input-field:focus { outline: none; border-color: #00594C; box-shadow: 0 0 0 2px rgba(0,89,76,0.1); }
+        .label-text { font-size: 0.75rem; font-weight: 600; color: #4B5563; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; display: block; }
+        table th { background-color: #00594C; color: white; font-weight: 500; text-align: left; padding: 0.75rem; font-size: 0.875rem; }
+        table td { padding: 0.75rem; border-bottom: 1px solid #E5E7EB; font-size: 0.875rem; }
+        
+        @media print {
+            body { background: white; }
+            .no-print { display: none !important; }
+            .card { box-shadow: none; border: none; }
+            input, select { border: none; -webkit-appearance: none; -moz-appearance: none; appearance: none; padding: 0; background: transparent; }
+            /* Memaksa background color tercetak di PDF */
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        const App = () => {
+            // State Identifikasi Kendaraan
+            const [identifikasi, setIdentifikasi] = useState({
+                nomorLaporan: '',
+                namaObjek: '',
+                nup: '',
+                lokasiObjek: '',
+                kategoriLokasi: 1, // Default Kategori 1
+                jenisKendaraan: 'Roda 2',
+                merek: '',
+                tipe: '',
+                tahunPembuatan: new Date().getFullYear(),
+                nomorPolisi: '',
+                dokumen: 'BPKB & STNK',
+                penggunaan: 'Kendaraan Dinas',
+                kondisiKendaraan: 0.7, // 0.7 = Tingkat kerusakan sampai 80%
+                tahunPenilaian: new Date().getFullYear()
+            });
+
+            // State Data Lelang Pembanding
+            const [lelang, setLelang] = useState([
+                { id: 1, namaKPKNL: '', kodeLelang: '', tipe: '', harga: 0, waktuLelang: new Date().getFullYear(), kategoriLokasi: 1, tahunPembuatan: new Date().getFullYear(), adjTipe: 0, adjMerek: 0, adjWaktu: 0, adjLokasi: 0, adjTahun: 0 }
+            ]);
+
+            // State Panitia
+            const [panitia, setPanitia] = useState([
+                { id: 1, nama: '', nip: '', jabatan: 'Ketua' },
+                { id: 2, nama: '', nip: '', jabatan: 'Anggota' }
+            ]);
+
+            // Handlers Identifikasi
+            const handleIdentifikasiChange = (e) => {
+                const { name, value } = e.target;
+                setIdentifikasi(prev => {
+                    const next = { ...prev, [name]: ['kategoriLokasi', 'tahunPembuatan', 'kondisiKendaraan', 'tahunPenilaian'].includes(name) ? Number(value) : value };
+                    return next;
+                });
+            };
+
+            // Recalculate auto-adjustments whenever Identifikasi (base) changes
+            useEffect(() => {
+                setLelang(prev => prev.map(item => ({
+                    ...item,
+                    adjWaktu: (identifikasi.tahunPenilaian - item.waktuLelang) * 2, // 2% per tahun perbedaan waktu lelang
+                    adjLokasi: (item.kategoriLokasi - identifikasi.kategoriLokasi) * -5, // -5% per perbedaan kategori (asumsi sederhana)
+                    adjTahun: (identifikasi.tahunPembuatan - item.tahunPembuatan) * 5 // 5% per tahun penyusutan
+                })));
+            }, [identifikasi.tahunPenilaian, identifikasi.kategoriLokasi, identifikasi.tahunPembuatan]);
+
+            // Handlers Lelang
+            const handleLelangChange = (index, field, value) => {
+                const newData = [...lelang];
+                const val = ['harga', 'waktuLelang', 'kategoriLokasi', 'tahunPembuatan', 'adjTipe', 'adjMerek', 'adjWaktu', 'adjLokasi', 'adjTahun'].includes(field) ? Number(value) : value;
+                newData[index][field] = val;
+
+                // Auto kalkulasi berdasarkan KMK (Knowledge)
+                if (['waktuLelang', 'kategoriLokasi', 'tahunPembuatan'].includes(field)) {
+                    newData[index].adjWaktu = (identifikasi.tahunPenilaian - (newData[index].waktuLelang || identifikasi.tahunPenilaian)) * 2; 
+                    newData[index].adjLokasi = ((newData[index].kategoriLokasi || 0) - identifikasi.kategoriLokasi) * -5; 
+                    newData[index].adjTahun = (identifikasi.tahunPembuatan - (newData[index].tahunPembuatan || 0)) * 5; 
+                }
+
+                setLelang(newData);
+            };
+
+            const addLelang = () => {
+                setLelang([...lelang, { 
+                    id: Date.now(), namaKPKNL: '', kodeLelang: '', tipe: '', harga: 0, 
+                    waktuLelang: identifikasi.tahunPenilaian, kategoriLokasi: identifikasi.kategoriLokasi, tahunPembuatan: identifikasi.tahunPembuatan, 
+                    adjTipe: 0, adjMerek: 0, adjWaktu: 0, adjLokasi: 0, adjTahun: 0 
+                }]);
+            };
+
+            const removeLelang = (index) => {
+                const newData = [...lelang];
+                newData.splice(index, 1);
+                setLelang(newData);
+            };
+
+            // Handlers Panitia
+            const handlePanitiaChange = (index, field, value) => {
+                const newData = [...panitia];
+                newData[index][field] = value;
+                setPanitia(newData);
+            };
+            const addPanitia = () => setPanitia([...panitia, { id: Date.now(), nama: '', nip: '', jabatan: 'Anggota' }]);
+            const removePanitia = (index) => {
+                const newData = [...panitia];
+                newData.splice(index, 1);
+                setPanitia(newData);
+            };
+
+            // Perhitungan
+            const perhitungan = useMemo(() => {
+                const hasilLelang = lelang.map(item => {
+                    const totalAdj = (item.adjTipe + item.adjMerek + item.adjWaktu + item.adjLokasi + item.adjTahun) / 100;
+                    const nilaiTaksiranRow = item.harga + (item.harga * totalAdj);
+                    return { ...item, totalAdjPercent: totalAdj * 100, nilaiTaksiranRow };
+                });
+
+                const totalNilaiTaksiran = hasilLelang.reduce((sum, item) => sum + item.nilaiTaksiranRow, 0);
+                const rataRata = lelang.length > 0 ? totalNilaiTaksiran / lelang.length : 0;
+                
+                // Taksiran limit = Rata-rata * Faktor Kondisi
+                const taksiranLimit = rataRata * identifikasi.kondisiKendaraan;
+                
+                // Pembulatan ke atas (ke ribuan terdekat)
+                const pembulatan = Math.ceil(taksiranLimit / 1000) * 1000;
+
+                return { hasilLelang, totalNilaiTaksiran, rataRata, taksiranLimit, pembulatan };
+            }, [lelang, identifikasi.kondisiKendaraan]);
+
+            // Formatter
+            const formatRp = (angka) => {
+                return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(angka);
+            };
+
+            // Export Excel
+            const exportToExcel = () => {
+                const wb = XLSX.utils.book_new();
+                
+                // Struktur Array of Arrays untuk Excel
+                const wsData = [
+                    ["KERTAS KERJA ANALISIS PENENTUAN NILAI TAKSIRAN BMN"],
+                    ["TUJUAN PEMINDAHTANGANAN DENGAN PENJUALAN SECARA LELANG"],
+                    [],
+                    ["Nomor Kertas Kerja", ":", identifikasi.nomorLaporan],
+                    [],
+                    ["1. Identifikasi"],
+                    ["a. Nama Objek", ":", identifikasi.namaObjek, "NUP", ":", identifikasi.nup],
+                    ["b. Lokasi Objek", ":", identifikasi.lokasiObjek, "Kategori Lokasi", ":", identifikasi.kategoriLokasi],
+                    ["c. Jenis Kendaraan", ":", identifikasi.jenisKendaraan],
+                    ["d. Merek Kendaraan", ":", identifikasi.merek],
+                    ["e. Tipe Kendaraan", ":", identifikasi.tipe],
+                    ["f. Tahun Pembuatan", ":", identifikasi.tahunPembuatan],
+                    ["g. Identitas Kendaraan"],
+                    ["   (i) Nomor Polisi", ":", identifikasi.nomorPolisi],
+                    ["   (ii) Dokumen", ":", identifikasi.dokumen],
+                    ["   (iii) Kondisi", ":", `${identifikasi.kondisiKendaraan * 100}%`],
+                    [],
+                    ["2. DATA HASIL LELANG (PEMBANDING)"],
+                    ["No", "Data Hasil Lelang (KPKNL)", "Kode Lelang", "Tipe", "Harga Lelang", "Waktu Lelang", "Kategori Lokasi", "Tahun Pembuatan"]
+                ];
+
+                lelang.forEach((l, i) => {
+                    wsData.push([i+1, l.namaKPKNL, l.kodeLelang, l.tipe, l.harga, l.waktuLelang, l.kategoriLokasi, l.tahunPembuatan]);
+                });
+
+                wsData.push([]);
+                wsData.push(["3. PENYESUAIAN"]);
+                wsData.push(["No", "Data Hasil Lelang", "Tipe (%)", "Merek (%)", "Waktu (%)", "Lokasi (%)", "Tahun Pembuatan (%)", "Total Penyesuaian (%)", "Nilai Taksiran"]);
+
+                perhitungan.hasilLelang.forEach((l, i) => {
+                    wsData.push([i+1, l.namaKPKNL, l.adjTipe, l.adjMerek, l.adjWaktu, l.adjLokasi, l.adjTahun, l.totalAdjPercent, l.nilaiTaksiranRow]);
+                });
+
+                wsData.push([]);
+                wsData.push(["", "", "", "", "", "", "Total Nilai Taksiran", formatRp(perhitungan.totalNilaiTaksiran)]);
+                wsData.push(["", "", "", "", "", "", "Rata-rata Nilai Taksiran", formatRp(perhitungan.rataRata)]);
+                wsData.push(["", "", "", "", "", "", `Taksiran Nilai Limit (x ${identifikasi.kondisiKendaraan})`, formatRp(perhitungan.taksiranLimit)]);
+                wsData.push(["", "", "", "", "", "", "PEMBULATAN (Nilai Akhir)", formatRp(perhitungan.pembulatan)]);
+
+                wsData.push([]);
+                wsData.push(["4. PANITIA PENAKSIR"]);
+                wsData.push(["No", "Nama", "NIP", "Jabatan"]);
+                panitia.forEach((p, i) => {
+                    wsData.push([i+1, p.nama, p.nip, p.jabatan]);
+                });
+
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+                XLSX.utils.book_append_sheet(wb, ws, "Taksiran BMN");
+                XLSX.writeFile(wb, `Taksiran_BMN_${identifikasi.nomorLaporan || 'Draft'}.xlsx`);
+            };
+
+            return (
+                <div className="max-w-6xl mx-auto p-4 md:p-8 font-sans">
+                    {/* Header */}
+                    <div className="mb-8 text-center md:text-left">
+                        <h1 className="text-3xl font-bold text-mckinsey-dark mb-2">Kertas Kerja Analisis Penentuan Nilai Taksiran BMN</h1>
+                        <p className="text-gray-600">Sesuai dengan KMK Nomor 375 Tahun 2024</p>
+                    </div>
+
+                    {/* 1. Identifikasi Form */}
+                    <div className="card mb-8">
+                        <div className="bg-mckinsey-green text-white p-4 rounded-t-sm flex items-center gap-2">
+                            <i data-lucide="file-text" className="w-5 h-5"></i>
+                            <h2 className="text-lg font-semibold">1. Identifikasi Kendaraan</h2>
+                        </div>
+                        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="md:col-span-3">
+                                <label className="label-text">Nomor Laporan / Kertas Kerja</label>
+                                <input type="text" name="nomorLaporan" value={identifikasi.nomorLaporan} onChange={handleIdentifikasiChange} className="input-field" placeholder="Contoh: 01/KT-BMN/2026" />
+                            </div>
+                            
+                            <div>
+                                <label className="label-text">Nama Objek</label>
+                                <input type="text" name="namaObjek" value={identifikasi.namaObjek} onChange={handleIdentifikasiChange} className="input-field" placeholder="Honda Scoopy" />
+                            </div>
+                            <div>
+                                <label className="label-text">NUP</label>
+                                <input type="text" name="nup" value={identifikasi.nup} onChange={handleIdentifikasiChange} className="input-field" placeholder="11" />
+                            </div>
+                            <div>
+                                <label className="label-text">Jenis Kendaraan</label>
+                                <select name="jenisKendaraan" value={identifikasi.jenisKendaraan} onChange={handleIdentifikasiChange} className="input-field bg-white">
+                                    <option value="Roda 2">Roda 2 atau 3</option>
+                                    <option value="Roda 4">Roda 4 atau Lebih</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="label-text">Merek Kendaraan</label>
+                                <input type="text" name="merek" value={identifikasi.merek} onChange={handleIdentifikasiChange} className="input-field" placeholder="Honda" />
+                            </div>
+                            <div>
+                                <label className="label-text">Tipe Kendaraan</label>
+                                <input type="text" name="tipe" value={identifikasi.tipe} onChange={handleIdentifikasiChange} className="input-field" placeholder="Scoopy 110 CC" />
+                            </div>
+                            <div>
+                                <label className="label-text">Tahun Pembuatan Objek</label>
+                                <input type="number" name="tahunPembuatan" value={identifikasi.tahunPembuatan} onChange={handleIdentifikasiChange} className="input-field" />
+                            </div>
+
+                            <div>
+                                <label className="label-text">Lokasi Objek</label>
+                                <input type="text" name="lokasiObjek" value={identifikasi.lokasiObjek} onChange={handleIdentifikasiChange} className="input-field" placeholder="Denpasar" />
+                            </div>
+                            <div>
+                                <label className="label-text">Kategori Lokasi (1-5)</label>
+                                <input type="number" name="kategoriLokasi" min="1" max="5" value={identifikasi.kategoriLokasi} onChange={handleIdentifikasiChange} className="input-field" />
+                            </div>
+                            <div>
+                                <label className="label-text">Tahun Penilaian Saat Ini</label>
+                                <input type="number" name="tahunPenilaian" value={identifikasi.tahunPenilaian} onChange={handleIdentifikasiChange} className="input-field" />
+                            </div>
+
+                            <div>
+                                <label className="label-text">Nomor Polisi</label>
+                                <input type="text" name="nomorPolisi" value={identifikasi.nomorPolisi} onChange={handleIdentifikasiChange} className="input-field" placeholder="DK 1234 AB" />
+                            </div>
+                            <div>
+                                <label className="label-text">Dokumen Kepemilikan</label>
+                                <select name="dokumen" value={identifikasi.dokumen} onChange={handleIdentifikasiChange} className="input-field bg-white">
+                                    <option value="BPKB & STNK">BPKB & STNK Lengkap</option>
+                                    <option value="Hanya BPKB">Hanya BPKB</option>
+                                    <option value="Hanya STNK">Hanya STNK</option>
+                                    <option value="Tidak Ada">Tidak Ada</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="label-text text-mckinsey-green">Kondisi Fisik Kendaraan</label>
+                                <select name="kondisiKendaraan" value={identifikasi.kondisiKendaraan} onChange={handleIdentifikasiChange} className="input-field bg-mckinsey-light font-semibold text-mckinsey-dark">
+                                    <option value={1.0}>Baik / Normal (100%)</option>
+                                    <option value={0.8}>Rusak Ringan (80%)</option>
+                                    <option value={0.7}>Kerusakan sd 80% (Faktor Pengali 0.7)</option>
+                                    <option value={0.6}>Kerusakan 80-90% (Faktor Pengali 0.6)</option>
+                                    <option value={0.1}>Scrap / Rongsok (Faktor Pengali 0.1)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 2. Data Lelang */}
+                    <div className="card mb-8 overflow-x-auto">
+                        <div className="bg-mckinsey-green text-white p-4 rounded-t-sm flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <i data-lucide="database" className="w-5 h-5"></i>
+                                <h2 className="text-lg font-semibold">2. Data Hasil Lelang (Pembanding)</h2>
+                            </div>
+                            <button onClick={addLelang} className="no-print bg-white text-mckinsey-green px-3 py-1 rounded text-sm font-semibold hover:bg-gray-100 transition shadow">
+                                + Tambah Pembanding
+                            </button>
+                        </div>
+                        <table className="w-full min-w-[800px]">
+                            <thead>
+                                <tr>
+                                    <th className="w-10">No</th>
+                                    <th>Asal KPKNL / Lokasi</th>
+                                    <th>Kode Lelang</th>
+                                    <th>Tipe/Merek</th>
+                                    <th>Harga Lelang (Rp)</th>
+                                    <th className="w-24">Waktu (Thn)</th>
+                                    <th className="w-24">Kat. Lokasi</th>
+                                    <th className="w-24">Thn Buat</th>
+                                    <th className="no-print w-10"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {lelang.map((item, index) => (
+                                    <tr key={item.id} className="hover:bg-gray-50">
+                                        <td className="text-center text-gray-500 font-semibold">{index + 1}</td>
+                                        <td><input type="text" value={item.namaKPKNL} onChange={(e) => handleLelangChange(index, 'namaKPKNL', e.target.value)} className="input-field" placeholder="KPKNL Denpasar" /></td>
+                                        <td><input type="text" value={item.kodeLelang} onChange={(e) => handleLelangChange(index, 'kodeLelang', e.target.value)} className="input-field" placeholder="XYZ123" /></td>
+                                        <td><input type="text" value={item.tipe} onChange={(e) => handleLelangChange(index, 'tipe', e.target.value)} className="input-field" placeholder="Scoopy" /></td>
+                                        <td><input type="number" value={item.harga} onChange={(e) => handleLelangChange(index, 'harga', e.target.value)} className="input-field font-semibold text-right" /></td>
+                                        <td><input type="number" value={item.waktuLelang} onChange={(e) => handleLelangChange(index, 'waktuLelang', e.target.value)} className="input-field text-center" /></td>
+                                        <td><input type="number" value={item.kategoriLokasi} onChange={(e) => handleLelangChange(index, 'kategoriLokasi', e.target.value)} className="input-field text-center" /></td>
+                                        <td><input type="number" value={item.tahunPembuatan} onChange={(e) => handleLelangChange(index, 'tahunPembuatan', e.target.value)} className="input-field text-center" /></td>
+                                        <td className="no-print">
+                                            <button onClick={() => removeLelang(index)} className="text-red-500 hover:text-red-700 p-1" title="Hapus"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {lelang.length === 0 && <tr><td colSpan="9" className="text-center py-4 text-gray-500">Belum ada data pembanding.</td></tr>}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* 3. Penyesuaian */}
+                    <div className="card mb-8 overflow-x-auto">
+                        <div className="bg-mckinsey-green text-white p-4 rounded-t-sm flex items-center gap-2">
+                            <i data-lucide="sliders" className="w-5 h-5"></i>
+                            <h2 className="text-lg font-semibold">3. Penyesuaian Otomatis & Perhitungan (%)</h2>
+                        </div>
+                        <div className="p-4 bg-yellow-50 border-b border-yellow-100 text-sm text-yellow-800">
+                            <strong>Info:</strong> Kolom Waktu, Lokasi, dan Tahun Pembuatan dihitung otomatis dari selisih dengan data objek. Anda dapat mengedit/menyesuaikan nilainya secara manual (Professional Judgement).
+                        </div>
+                        <table className="w-full min-w-[800px]">
+                            <thead>
+                                <tr>
+                                    <th className="w-10">No</th>
+                                    <th>Pembanding</th>
+                                    <th className="w-20">Tipe %</th>
+                                    <th className="w-20">Merek %</th>
+                                    <th className="w-20">Waktu %</th>
+                                    <th className="w-20">Lokasi %</th>
+                                    <th className="w-24">Thn Buat %</th>
+                                    <th className="bg-mckinsey-dark text-center">Total Penyesuaian</th>
+                                    <th className="bg-mckinsey-dark text-right">Nilai Taksiran (Rp)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {lelang.map((item, index) => (
+                                    <tr key={item.id}>
+                                        <td className="text-center text-gray-500 font-semibold">{index + 1}</td>
+                                        <td className="font-medium text-gray-700">{item.namaKPKNL || 'Pembanding ' + (index+1)}</td>
+                                        <td><input type="number" step="0.1" value={item.adjTipe} onChange={(e) => handleLelangChange(index, 'adjTipe', e.target.value)} className="input-field text-center" /></td>
+                                        <td><input type="number" step="0.1" value={item.adjMerek} onChange={(e) => handleLelangChange(index, 'adjMerek', e.target.value)} className="input-field text-center" /></td>
+                                        <td><input type="number" step="0.1" value={item.adjWaktu} onChange={(e) => handleLelangChange(index, 'adjWaktu', e.target.value)} className="input-field text-center bg-gray-50" /></td>
+                                        <td><input type="number" step="0.1" value={item.adjLokasi} onChange={(e) => handleLelangChange(index, 'adjLokasi', e.target.value)} className="input-field text-center bg-gray-50" /></td>
+                                        <td><input type="number" step="0.1" value={item.adjTahun} onChange={(e) => handleLelangChange(index, 'adjTahun', e.target.value)} className="input-field text-center bg-gray-50" /></td>
+                                        <td className="text-center font-bold text-mckinsey-green bg-mckinsey-light">{perhitungan.hasilLelang[index]?.totalAdjPercent.toFixed(1)}%</td>
+                                        <td className="text-right font-bold text-gray-800">{formatRp(perhitungan.hasilLelang[index]?.nilaiTaksiranRow)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* 4. Hasil Perhitungan Akhir */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div className="card p-0 overflow-hidden">
+                            <div className="bg-mckinsey-green text-white p-4">
+                                <h2 className="text-lg font-semibold flex items-center gap-2"><i data-lucide="calculator" className="w-5 h-5"></i> Ringkasan Nilai</h2>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <div className="flex justify-between items-center border-b pb-2">
+                                    <span className="text-gray-600">Rata-rata Nilai Taksiran</span>
+                                    <span className="font-semibold">{formatRp(perhitungan.rataRata)}</span>
+                                </div>
+                                <div className="flex justify-between items-center border-b pb-2">
+                                    <span className="text-gray-600">Faktor Kondisi Kendaraan</span>
+                                    <span className="font-semibold text-orange-600">x {identifikasi.kondisiKendaraan}</span>
+                                </div>
+                                <div className="flex justify-between items-center border-b pb-2">
+                                    <span className="text-gray-600">Taksiran Nilai Limit Lelang</span>
+                                    <span className="font-semibold">{formatRp(perhitungan.taksiranLimit)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="card bg-mckinsey-dark text-white p-8 flex flex-col justify-center items-center text-center shadow-lg border-0 relative overflow-hidden">
+                            {/* Decorative element */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-bl-full"></div>
+                            
+                            <h3 className="text-mckinsey-light text-lg mb-2 uppercase tracking-wider font-semibold">Pembulatan Nilai Taksiran Akhir</h3>
+                            <div className="text-4xl md:text-5xl font-bold text-mckinsey-accent mb-4 tracking-tight drop-shadow-md">
+                                {formatRp(perhitungan.pembulatan)}
+                            </div>
+                            <p className="text-sm text-gray-300 bg-black bg-opacity-20 py-2 px-4 rounded-full border border-gray-600">Dibulatkan ke ribuan ke atas</p>
+                        </div>
+                    </div>
+
+                    {/* 5. Panitia Penaksir */}
+                    <div className="card mb-8">
+                        <div className="bg-mckinsey-green text-white p-4 rounded-t-sm flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <i data-lucide="users" className="w-5 h-5"></i>
+                                <h2 className="text-lg font-semibold">5. Panitia Penaksir</h2>
+                            </div>
+                            <button onClick={addPanitia} className="no-print bg-white text-mckinsey-green px-3 py-1 rounded text-sm font-semibold hover:bg-gray-100 transition shadow">
+                                + Tambah Anggota
+                            </button>
+                        </div>
+                        <table className="w-full">
+                            <thead>
+                                <tr>
+                                    <th className="w-10">No</th>
+                                    <th>Nama Lengkap</th>
+                                    <th>NIP</th>
+                                    <th>Jabatan dalam Panitia</th>
+                                    <th className="no-print w-10"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {panitia.map((item, index) => (
+                                    <tr key={item.id}>
+                                        <td className="text-center text-gray-500 font-semibold">{index + 1}</td>
+                                        <td><input type="text" value={item.nama} onChange={(e) => handlePanitiaChange(index, 'nama', e.target.value)} className="input-field" placeholder="Nama..." /></td>
+                                        <td><input type="text" value={item.nip} onChange={(e) => handlePanitiaChange(index, 'nip', e.target.value)} className="input-field" placeholder="NIP..." /></td>
+                                        <td>
+                                            <select value={item.jabatan} onChange={(e) => handlePanitiaChange(index, 'jabatan', e.target.value)} className="input-field bg-white">
+                                                <option value="Ketua">Ketua</option>
+                                                <option value="Sekretaris">Sekretaris</option>
+                                                <option value="Anggota">Anggota</option>
+                                            </select>
+                                        </td>
+                                        <td className="no-print">
+                                            <button onClick={() => removePanitia(index)} className="text-red-500 hover:text-red-700 p-1" title="Hapus"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="no-print flex flex-col sm:flex-row gap-4 justify-end mt-8 border-t pt-6">
+                        <button onClick={exportToExcel} className="flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-mckinsey-green text-mckinsey-green font-semibold rounded hover:bg-green-50 transition shadow-sm">
+                            <i data-lucide="file-spreadsheet" className="w-5 h-5"></i> Export ke Excel
+                        </button>
+                        <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-6 py-3 bg-mckinsey-green text-white font-semibold rounded hover:bg-mckinsey-dark transition shadow-md">
+                            <i data-lucide="printer" className="w-5 h-5"></i> Cetak Laporan (PDF)
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+        // Initialize Icons after slight delay to ensure render
+        setTimeout(() => lucide.createIcons(), 100);
+    </script>
+</body>
+</html>
