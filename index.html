@@ -38,6 +38,9 @@
     <!-- SheetJS for Excel Export -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 
+    <!-- html2pdf for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -47,17 +50,20 @@
         .input-field { width: 100%; border: 1px solid #D1D5DB; padding: 0.5rem; border-radius: 4px; font-size: 0.875rem; transition: border-color 0.2s; }
         .input-field:focus { outline: none; border-color: #00594C; box-shadow: 0 0 0 2px rgba(0,89,76,0.1); }
         .label-text { font-size: 0.75rem; font-weight: 600; color: #4B5563; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; display: block; }
-        table th { background-color: #00594C; color: white; font-weight: 500; text-align: left; padding: 0.75rem; font-size: 0.875rem; }
-        table td { padding: 0.75rem; border-bottom: 1px solid #E5E7EB; font-size: 0.875rem; }
         
-        @media print {
-            body { background: white; }
-            .no-print { display: none !important; }
-            .card { box-shadow: none; border: none; }
-            input, select { border: none; -webkit-appearance: none; -moz-appearance: none; appearance: none; padding: 0; background: transparent; }
-            /* Memaksa background color tercetak di PDF */
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-        }
+        /* Main UI Tables */
+        .ui-table th { background-color: #00594C; color: white; font-weight: 500; text-align: left; padding: 0.75rem; font-size: 0.875rem; }
+        .ui-table td { padding: 0.75rem; border-bottom: 1px solid #E5E7EB; font-size: 0.875rem; }
+
+        /* Excel-like Print Template Tables */
+        #pdf-template { font-family: 'Times New Roman', Times, serif; color: black; background: white; }
+        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 11px; }
+        .print-table th, .print-table td { border: 1px solid black; padding: 4px 6px; text-align: left; vertical-align: top; }
+        .print-table th { background-color: #f3f4f6; font-weight: bold; text-align: center; }
+        .no-border-table td { border: none !important; padding: 2px 4px; }
+        
+        /* Checkbox Box Print */
+        .box { display: inline-block; width: 12px; height: 12px; border: 1px solid black; text-align: center; line-height: 12px; font-size: 10px; margin-right: 4px; font-weight: bold;}
     </style>
 </head>
 <body>
@@ -67,25 +73,38 @@
         const { useState, useEffect, useMemo } = React;
 
         const App = () => {
-            // State Identifikasi Kendaraan
+            const [saveMessage, setSaveMessage] = useState('');
+            const [logoUrl, setLogoUrl] = useState('');
+            
+            // Workflow State
+            const [isExcelExported, setIsExcelExported] = useState(false);
+            const [isExportingPDF, setIsExportingPDF] = useState(false);
+
+            // State Identifikasi Kendaraan Lengkap
             const [identifikasi, setIdentifikasi] = useState({
+                namaSatker: '',
                 nomorLaporan: '',
                 namaObjek: '',
                 nup: '',
                 lokasiObjek: '',
-                kategoriLokasi: 1, // Default Kategori 1
-                jenisKendaraan: 'Roda 2',
+                kategoriLokasi: 1,
+                jenisKendaraan: 'Roda 2 atau 3',
                 merek: '',
                 tipe: '',
-                tahunPembuatan: new Date().getFullYear(),
                 nomorPolisi: '',
-                dokumen: 'BPKB & STNK',
+                dokumen: 'BPKB',
+                pemilikDokumen: '',
+                masaBerlaku: 'Masih Berlaku',
                 penggunaan: 'Kendaraan Dinas',
-                kondisiKendaraan: 0.7, // 0.7 = Tingkat kerusakan sampai 80%
+                keteranganLain: '',
+                warna: '',
+                tahunPembuatan: new Date().getFullYear(),
+                bahanBakar: 'Bensin',
+                kondisiKendaraan: 0.7,
                 tahunPenilaian: new Date().getFullYear()
             });
 
-            // State Data Lelang Pembanding
+            // State Data Lelang
             const [lelang, setLelang] = useState([
                 { id: 1, namaKPKNL: '', kodeLelang: '', tipe: '', harga: 0, waktuLelang: new Date().getFullYear(), kategoriLokasi: 1, tahunPembuatan: new Date().getFullYear(), adjTipe: 0, adjMerek: 0, adjWaktu: 0, adjLokasi: 0, adjTahun: 0 }
             ]);
@@ -96,410 +115,578 @@
                 { id: 2, nama: '', nip: '', jabatan: 'Anggota' }
             ]);
 
-            // Handlers Identifikasi
-            const handleIdentifikasiChange = (e) => {
-                const { name, value } = e.target;
-                setIdentifikasi(prev => {
-                    const next = { ...prev, [name]: ['kategoriLokasi', 'tahunPembuatan', 'kondisiKendaraan', 'tahunPenilaian'].includes(name) ? Number(value) : value };
-                    return next;
-                });
+            useEffect(() => {
+                const savedData = localStorage.getItem('taksiranBMN_data');
+                if (savedData) {
+                    try {
+                        const parsed = JSON.parse(savedData);
+                        if (parsed.identifikasi) setIdentifikasi(parsed.identifikasi);
+                        if (parsed.lelang) setLelang(parsed.lelang);
+                        if (parsed.panitia) setPanitia(parsed.panitia);
+                        if (parsed.logoUrl) setLogoUrl(parsed.logoUrl);
+                    } catch (e) {}
+                }
+            }, []);
+
+            useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [logoUrl, lelang.length, panitia.length]);
+
+            const saveProgress = () => {
+                localStorage.setItem('taksiranBMN_data', JSON.stringify({ identifikasi, lelang, panitia, logoUrl }));
+                setSaveMessage('Progress berhasil disimpan!');
+                setTimeout(() => setSaveMessage(''), 3000);
             };
 
-            // Recalculate auto-adjustments whenever Identifikasi (base) changes
+            const handleLogoUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => setLogoUrl(reader.result);
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const handleIdentifikasiChange = (e) => {
+                const { name, value } = e.target;
+                setIdentifikasi(prev => ({ ...prev, [name]: ['kategoriLokasi', 'tahunPembuatan', 'kondisiKendaraan', 'tahunPenilaian'].includes(name) ? Number(value) : value }));
+                setIsExcelExported(false); // Reset lock if data changes
+            };
+
             useEffect(() => {
                 setLelang(prev => prev.map(item => ({
                     ...item,
-                    adjWaktu: (identifikasi.tahunPenilaian - item.waktuLelang) * 2, // 2% per tahun perbedaan waktu lelang
-                    adjLokasi: (item.kategoriLokasi - identifikasi.kategoriLokasi) * -5, // -5% per perbedaan kategori (asumsi sederhana)
-                    adjTahun: (identifikasi.tahunPembuatan - item.tahunPembuatan) * 5 // 5% per tahun penyusutan
+                    adjWaktu: (identifikasi.tahunPenilaian - item.waktuLelang) * 2,
+                    adjLokasi: (item.kategoriLokasi - identifikasi.kategoriLokasi) * -5,
+                    adjTahun: (identifikasi.tahunPembuatan - item.tahunPembuatan) * 5
                 })));
             }, [identifikasi.tahunPenilaian, identifikasi.kategoriLokasi, identifikasi.tahunPembuatan]);
 
-            // Handlers Lelang
             const handleLelangChange = (index, field, value) => {
                 const newData = [...lelang];
                 const val = ['harga', 'waktuLelang', 'kategoriLokasi', 'tahunPembuatan', 'adjTipe', 'adjMerek', 'adjWaktu', 'adjLokasi', 'adjTahun'].includes(field) ? Number(value) : value;
                 newData[index][field] = val;
-
-                // Auto kalkulasi berdasarkan KMK (Knowledge)
                 if (['waktuLelang', 'kategoriLokasi', 'tahunPembuatan'].includes(field)) {
                     newData[index].adjWaktu = (identifikasi.tahunPenilaian - (newData[index].waktuLelang || identifikasi.tahunPenilaian)) * 2; 
                     newData[index].adjLokasi = ((newData[index].kategoriLokasi || 0) - identifikasi.kategoriLokasi) * -5; 
                     newData[index].adjTahun = (identifikasi.tahunPembuatan - (newData[index].tahunPembuatan || 0)) * 5; 
                 }
-
                 setLelang(newData);
+                setIsExcelExported(false);
             };
 
-            const addLelang = () => {
-                setLelang([...lelang, { 
-                    id: Date.now(), namaKPKNL: '', kodeLelang: '', tipe: '', harga: 0, 
-                    waktuLelang: identifikasi.tahunPenilaian, kategoriLokasi: identifikasi.kategoriLokasi, tahunPembuatan: identifikasi.tahunPembuatan, 
-                    adjTipe: 0, adjMerek: 0, adjWaktu: 0, adjLokasi: 0, adjTahun: 0 
-                }]);
-            };
+            const addLelang = () => setLelang([...lelang, { id: Date.now(), namaKPKNL: '', kodeLelang: '', tipe: '', harga: 0, waktuLelang: identifikasi.tahunPenilaian, kategoriLokasi: identifikasi.kategoriLokasi, tahunPembuatan: identifikasi.tahunPembuatan, adjTipe: 0, adjMerek: 0, adjWaktu: 0, adjLokasi: 0, adjTahun: 0 }]);
+            const removeLelang = (index) => setLelang(lelang.filter((_, i) => i !== index));
 
-            const removeLelang = (index) => {
-                const newData = [...lelang];
-                newData.splice(index, 1);
-                setLelang(newData);
-            };
-
-            // Handlers Panitia
             const handlePanitiaChange = (index, field, value) => {
                 const newData = [...panitia];
                 newData[index][field] = value;
                 setPanitia(newData);
             };
             const addPanitia = () => setPanitia([...panitia, { id: Date.now(), nama: '', nip: '', jabatan: 'Anggota' }]);
-            const removePanitia = (index) => {
-                const newData = [...panitia];
-                newData.splice(index, 1);
-                setPanitia(newData);
-            };
+            const removePanitia = (index) => setPanitia(panitia.filter((_, i) => i !== index));
 
-            // Perhitungan
             const perhitungan = useMemo(() => {
                 const hasilLelang = lelang.map(item => {
                     const totalAdj = (item.adjTipe + item.adjMerek + item.adjWaktu + item.adjLokasi + item.adjTahun) / 100;
                     const nilaiTaksiranRow = item.harga + (item.harga * totalAdj);
                     return { ...item, totalAdjPercent: totalAdj * 100, nilaiTaksiranRow };
                 });
-
                 const totalNilaiTaksiran = hasilLelang.reduce((sum, item) => sum + item.nilaiTaksiranRow, 0);
                 const rataRata = lelang.length > 0 ? totalNilaiTaksiran / lelang.length : 0;
-                
-                // Taksiran limit = Rata-rata * Faktor Kondisi
                 const taksiranLimit = rataRata * identifikasi.kondisiKendaraan;
-                
-                // Pembulatan ke atas (ke ribuan terdekat)
                 const pembulatan = Math.ceil(taksiranLimit / 1000) * 1000;
-
                 return { hasilLelang, totalNilaiTaksiran, rataRata, taksiranLimit, pembulatan };
             }, [lelang, identifikasi.kondisiKendaraan]);
 
-            // Formatter
-            const formatRp = (angka) => {
-                return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(angka);
-            };
+            const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(angka);
 
-            // Export Excel
+            // === EXPORT EXCEL LOGIC ===
             const exportToExcel = () => {
                 const wb = XLSX.utils.book_new();
-                
-                // Struktur Array of Arrays untuk Excel
+                const satkerTitle = identifikasi.namaSatker ? identifikasi.namaSatker.toUpperCase() : "KEMENTERIAN / LEMBAGA";
+
                 const wsData = [
                     ["KERTAS KERJA ANALISIS PENENTUAN NILAI TAKSIRAN BMN"],
+                    [satkerTitle],
                     ["TUJUAN PEMINDAHTANGANAN DENGAN PENJUALAN SECARA LELANG"],
                     [],
                     ["Nomor Kertas Kerja", ":", identifikasi.nomorLaporan],
                     [],
                     ["1. Identifikasi"],
-                    ["a. Nama Objek", ":", identifikasi.namaObjek, "NUP", ":", identifikasi.nup],
-                    ["b. Lokasi Objek", ":", identifikasi.lokasiObjek, "Kategori Lokasi", ":", identifikasi.kategoriLokasi],
-                    ["c. Jenis Kendaraan", ":", identifikasi.jenisKendaraan],
-                    ["d. Merek Kendaraan", ":", identifikasi.merek],
-                    ["e. Tipe Kendaraan", ":", identifikasi.tipe],
-                    ["f. Tahun Pembuatan", ":", identifikasi.tahunPembuatan],
-                    ["g. Identitas Kendaraan"],
-                    ["   (i) Nomor Polisi", ":", identifikasi.nomorPolisi],
-                    ["   (ii) Dokumen", ":", identifikasi.dokumen],
-                    ["   (iii) Kondisi", ":", `${identifikasi.kondisiKendaraan * 100}%`],
+                    ["a.", "Nama Objek", ":", identifikasi.namaObjek, "NUP", ":", identifikasi.nup],
+                    ["b.", "Lokasi Objek", ":", identifikasi.lokasiObjek, "Kategori Lokasi", ":", identifikasi.kategoriLokasi],
+                    ["c.", "Jenis Kendaraan", ":", identifikasi.jenisKendaraan],
+                    ["d.", "Merek Kendaraan", ":", identifikasi.merek],
+                    ["e.", "Tipe Kendaraan", ":", identifikasi.tipe],
+                    ["f.", "Identitas Kendaraan"],
+                    ["", "(i) Nomor Polisi", ":", identifikasi.nomorPolisi],
+                    ["", "(ii) Dokumen Kepemilikan", ":", identifikasi.dokumen],
+                    ["", "(iii) Pemilik Dokumen", ":", identifikasi.pemilikDokumen],
+                    ["", "(iv) Masa Berlaku", ":", identifikasi.masaBerlaku],
+                    ["", "(v) Penggunaan Kendaraan", ":", identifikasi.penggunaan],
+                    ["", "(vi) Keterangan Lain", ":", identifikasi.keteranganLain],
                     [],
-                    ["2. DATA HASIL LELANG (PEMBANDING)"],
-                    ["No", "Data Hasil Lelang (KPKNL)", "Kode Lelang", "Tipe", "Harga Lelang", "Waktu Lelang", "Kategori Lokasi", "Tahun Pembuatan"]
+                    ["2. Fisik Kendaraan"],
+                    ["a.", "Warna", ":", identifikasi.warna, "d.", "Kondisi Kendaraan"],
+                    ["b.", "Tahun Pembuatan", ":", identifikasi.tahunPembuatan, "", `${identifikasi.kondisiKendaraan * 100}% (Faktor pengali ${identifikasi.kondisiKendaraan})`],
+                    ["c.", "Bahan Bakar", ":", identifikasi.bahanBakar],
+                    [],
+                    ["DATA HASIL LELANG"],
+                    ["No", "Data Hasil Lelang", "Kode Lelang", "Tipe", "Harga Lelang", "Waktu Lelang", "Kat. Lokasi", "Tahun Pembuatan"]
                 ];
 
-                lelang.forEach((l, i) => {
-                    wsData.push([i+1, l.namaKPKNL, l.kodeLelang, l.tipe, l.harga, l.waktuLelang, l.kategoriLokasi, l.tahunPembuatan]);
-                });
+                lelang.forEach((l, i) => wsData.push([i+1, l.namaKPKNL, l.kodeLelang, l.tipe, l.harga, l.waktuLelang, l.kategoriLokasi, l.tahunPembuatan]));
 
                 wsData.push([]);
-                wsData.push(["3. PENYESUAIAN"]);
-                wsData.push(["No", "Data Hasil Lelang", "Tipe (%)", "Merek (%)", "Waktu (%)", "Lokasi (%)", "Tahun Pembuatan (%)", "Total Penyesuaian (%)", "Nilai Taksiran"]);
+                wsData.push(["PENYESUAIAN"]);
+                wsData.push(["No", "Data Hasil Lelang", "Tipe", "Merek", "Waktu", "Lokasi", "Thn Pembuatan", "Total", "Nilai Taksiran"]);
 
-                perhitungan.hasilLelang.forEach((l, i) => {
-                    wsData.push([i+1, l.namaKPKNL, l.adjTipe, l.adjMerek, l.adjWaktu, l.adjLokasi, l.adjTahun, l.totalAdjPercent, l.nilaiTaksiranRow]);
-                });
+                perhitungan.hasilLelang.forEach((l, i) => wsData.push([i+1, l.namaKPKNL, `${l.adjTipe}%`, `${l.adjMerek}%`, `${l.adjWaktu}%`, `${l.adjLokasi}%`, `${l.adjTahun}%`, `${l.totalAdjPercent.toFixed(1)}%`, l.nilaiTaksiranRow]));
 
                 wsData.push([]);
                 wsData.push(["", "", "", "", "", "", "Total Nilai Taksiran", formatRp(perhitungan.totalNilaiTaksiran)]);
                 wsData.push(["", "", "", "", "", "", "Rata-rata Nilai Taksiran", formatRp(perhitungan.rataRata)]);
-                wsData.push(["", "", "", "", "", "", `Taksiran Nilai Limit (x ${identifikasi.kondisiKendaraan})`, formatRp(perhitungan.taksiranLimit)]);
-                wsData.push(["", "", "", "", "", "", "PEMBULATAN (Nilai Akhir)", formatRp(perhitungan.pembulatan)]);
+                wsData.push(["", "", "", "", "", "", `Taksiran Nilai Limit Lelang (x ${identifikasi.kondisiKendaraan})`, formatRp(perhitungan.taksiranLimit)]);
+                wsData.push(["", "", "", "", "", "", "PEMBULATAN", formatRp(perhitungan.pembulatan)]);
 
                 wsData.push([]);
-                wsData.push(["4. PANITIA PENAKSIR"]);
+                wsData.push(["PANITIA PENAKSIR"]);
                 wsData.push(["No", "Nama", "NIP", "Jabatan"]);
-                panitia.forEach((p, i) => {
-                    wsData.push([i+1, p.nama, p.nip, p.jabatan]);
-                });
+                panitia.forEach((p, i) => wsData.push([i+1, p.nama, p.nip, p.jabatan]));
 
                 const ws = XLSX.utils.aoa_to_sheet(wsData);
                 XLSX.utils.book_append_sheet(wb, ws, "Taksiran BMN");
                 XLSX.writeFile(wb, `Taksiran_BMN_${identifikasi.nomorLaporan || 'Draft'}.xlsx`);
+
+                // Buka kunci tombol PDF setelah Excel digenerate
+                setIsExcelExported(true);
             };
 
+            // === EXPORT PDF LOGIC ===
+            const exportToPDF = () => {
+                if (!isExcelExported) return;
+                
+                setIsExportingPDF(true); // Memunculkan container template di luar layar
+
+                setTimeout(() => {
+                    const element = document.getElementById('pdf-template');
+                    
+                    const opt = {
+                        margin:       [10, 10, 15, 10], // Margin atas kiri bawah kanan
+                        filename:     `Taksiran_BMN_${identifikasi.nomorLaporan || 'Draft'}.pdf`,
+                        image:        { type: 'jpeg', quality: 0.98 },
+                        html2canvas:  { scale: 2, useCORS: true, logging: false },
+                        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    };
+
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        setIsExportingPDF(false); // Sembunyikan lagi setelah selesai
+                    }).catch(err => {
+                        console.error("Gagal mencetak PDF:", err);
+                        setIsExportingPDF(false);
+                    });
+                }, 100);
+            };
+
+            const CheckBox = ({ checked, label }) => (
+                <span className="inline-flex items-center mr-4">
+                    <span className="box">{checked ? '✓' : ''}</span>
+                    <span>{label}</span>
+                </span>
+            );
+
             return (
-                <div className="max-w-6xl mx-auto p-4 md:p-8 font-sans">
-                    {/* Header */}
-                    <div className="mb-8 text-center md:text-left">
-                        <h1 className="text-3xl font-bold text-mckinsey-dark mb-2">Kertas Kerja Analisis Penentuan Nilai Taksiran BMN</h1>
-                        <p className="text-gray-600">Sesuai dengan KMK Nomor 375 Tahun 2024</p>
+                <div className="max-w-6xl mx-auto p-4 md:p-8 font-sans bg-[#F8F9FA]">
+                    
+                    {/* Header UI (Hanya tampilan web) */}
+                    <div className="mb-8 flex flex-col md:flex-row items-center md:items-start gap-6 border-b-[3px] border-black pb-6">
+                        <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 relative group">
+                            {logoUrl ? (
+                                <>
+                                    <img src={logoUrl} alt="Logo Instansi" className="w-full h-full object-contain" />
+                                    <button onClick={() => setLogoUrl('')} className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-md hidden group-hover:block"><i data-lucide="x" className="w-4 h-4"></i></button>
+                                </>
+                            ) : (
+                                <div className="w-full h-full border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 text-xs text-center rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer relative">
+                                    <i data-lucide="image-plus" className="w-6 h-6 mb-2"></i>
+                                    <span>Upload Logo</span>
+                                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
+                                </div>
+                            )}
+                        </div>
+                        <div className="text-center md:text-left flex-grow flex flex-col justify-center min-h-[6rem] md:min-h-[8rem]">
+                            <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 uppercase tracking-wide">Kertas Kerja Analisis Penentuan Nilai Taksiran BMN</h1>
+                            <h2 className="text-lg font-semibold text-black mb-2 uppercase">TUJUAN PEMINDAHTANGANAN DENGAN PENJUALAN SECARA LELANG PADA {identifikasi.namaSatker ? `"${identifikasi.namaSatker}"` : '"NAMA SATKER"'}</h2>
+                        </div>
                     </div>
 
-                    {/* 1. Identifikasi Form */}
+                    {/* 1. Form Identifikasi LENGKAP */}
                     <div className="card mb-8">
                         <div className="bg-mckinsey-green text-white p-4 rounded-t-sm flex items-center gap-2">
                             <i data-lucide="file-text" className="w-5 h-5"></i>
-                            <h2 className="text-lg font-semibold">1. Identifikasi Kendaraan</h2>
+                            <h2 className="text-lg font-semibold">1 & 2. Identifikasi & Fisik Kendaraan</h2>
                         </div>
                         <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="md:col-span-3">
-                                <label className="label-text">Nomor Laporan / Kertas Kerja</label>
-                                <input type="text" name="nomorLaporan" value={identifikasi.nomorLaporan} onChange={handleIdentifikasiChange} className="input-field" placeholder="Contoh: 01/KT-BMN/2026" />
-                            </div>
+                            <div className="md:col-span-3"><label className="label-text">Nama Satker (Cetak Kop)</label><input type="text" name="namaSatker" value={identifikasi.namaSatker} onChange={handleIdentifikasiChange} className="input-field bg-mckinsey-light text-mckinsey-dark font-semibold" placeholder="Contoh: KEMENTERIAN PERTANIAN" /></div>
+                            <div className="md:col-span-3"><label className="label-text">Nomor Kertas Kerja</label><input type="text" name="nomorLaporan" value={identifikasi.nomorLaporan} onChange={handleIdentifikasiChange} className="input-field" placeholder="Contoh: 01/KT-BMN/2026" /></div>
                             
-                            <div>
-                                <label className="label-text">Nama Objek</label>
-                                <input type="text" name="namaObjek" value={identifikasi.namaObjek} onChange={handleIdentifikasiChange} className="input-field" placeholder="Honda Scoopy" />
-                            </div>
-                            <div>
-                                <label className="label-text">NUP</label>
-                                <input type="text" name="nup" value={identifikasi.nup} onChange={handleIdentifikasiChange} className="input-field" placeholder="11" />
-                            </div>
-                            <div>
-                                <label className="label-text">Jenis Kendaraan</label>
-                                <select name="jenisKendaraan" value={identifikasi.jenisKendaraan} onChange={handleIdentifikasiChange} className="input-field bg-white">
-                                    <option value="Roda 2">Roda 2 atau 3</option>
-                                    <option value="Roda 4">Roda 4 atau Lebih</option>
-                                </select>
-                            </div>
+                            {/* Row 1 */}
+                            <div><label className="label-text">Nama Objek</label><input type="text" name="namaObjek" value={identifikasi.namaObjek} onChange={handleIdentifikasiChange} className="input-field" /></div>
+                            <div><label className="label-text">NUP</label><input type="text" name="nup" value={identifikasi.nup} onChange={handleIdentifikasiChange} className="input-field" /></div>
+                            <div><label className="label-text">Jenis Kendaraan</label><select name="jenisKendaraan" value={identifikasi.jenisKendaraan} onChange={handleIdentifikasiChange} className="input-field bg-white"><option value="Roda 2 atau 3">Roda 2 atau 3</option><option value="Roda 4 atau Lebih">Roda 4 atau Lebih</option></select></div>
+                            
+                            {/* Row 2 */}
+                            <div><label className="label-text">Lokasi Objek</label><input type="text" name="lokasiObjek" value={identifikasi.lokasiObjek} onChange={handleIdentifikasiChange} className="input-field" /></div>
+                            <div><label className="label-text">Kategori Lokasi (1-5)</label><input type="number" name="kategoriLokasi" min="1" max="5" value={identifikasi.kategoriLokasi} onChange={handleIdentifikasiChange} className="input-field" /></div>
+                            <div><label className="label-text">Tahun Penilaian (Saat Ini)</label><input type="number" name="tahunPenilaian" value={identifikasi.tahunPenilaian} onChange={handleIdentifikasiChange} className="input-field" /></div>
 
-                            <div>
-                                <label className="label-text">Merek Kendaraan</label>
-                                <input type="text" name="merek" value={identifikasi.merek} onChange={handleIdentifikasiChange} className="input-field" placeholder="Honda" />
-                            </div>
-                            <div>
-                                <label className="label-text">Tipe Kendaraan</label>
-                                <input type="text" name="tipe" value={identifikasi.tipe} onChange={handleIdentifikasiChange} className="input-field" placeholder="Scoopy 110 CC" />
-                            </div>
-                            <div>
-                                <label className="label-text">Tahun Pembuatan Objek</label>
-                                <input type="number" name="tahunPembuatan" value={identifikasi.tahunPembuatan} onChange={handleIdentifikasiChange} className="input-field" />
-                            </div>
+                            {/* Row 3 */}
+                            <div><label className="label-text">Merek Kendaraan</label><input type="text" name="merek" value={identifikasi.merek} onChange={handleIdentifikasiChange} className="input-field" /></div>
+                            <div><label className="label-text">Tipe Kendaraan</label><input type="text" name="tipe" value={identifikasi.tipe} onChange={handleIdentifikasiChange} className="input-field" /></div>
+                            <div><label className="label-text">Tahun Pembuatan Objek</label><input type="number" name="tahunPembuatan" value={identifikasi.tahunPembuatan} onChange={handleIdentifikasiChange} className="input-field" /></div>
 
-                            <div>
-                                <label className="label-text">Lokasi Objek</label>
-                                <input type="text" name="lokasiObjek" value={identifikasi.lokasiObjek} onChange={handleIdentifikasiChange} className="input-field" placeholder="Denpasar" />
-                            </div>
-                            <div>
-                                <label className="label-text">Kategori Lokasi (1-5)</label>
-                                <input type="number" name="kategoriLokasi" min="1" max="5" value={identifikasi.kategoriLokasi} onChange={handleIdentifikasiChange} className="input-field" />
-                            </div>
-                            <div>
-                                <label className="label-text">Tahun Penilaian Saat Ini</label>
-                                <input type="number" name="tahunPenilaian" value={identifikasi.tahunPenilaian} onChange={handleIdentifikasiChange} className="input-field" />
-                            </div>
+                            {/* Row Identitas Tambahan */}
+                            <div><label className="label-text">Nomor Polisi</label><input type="text" name="nomorPolisi" value={identifikasi.nomorPolisi} onChange={handleIdentifikasiChange} className="input-field" /></div>
+                            <div><label className="label-text">Dokumen Kepemilikan</label><select name="dokumen" value={identifikasi.dokumen} onChange={handleIdentifikasiChange} className="input-field bg-white"><option value="BPKB">BPKB</option><option value="STNK">STNK</option><option value="Lainnya">Lainnya...</option><option value="Tidak Ada">Tidak Ada</option></select></div>
+                            <div><label className="label-text">Pemilik Dokumen</label><input type="text" name="pemilikDokumen" value={identifikasi.pemilikDokumen} onChange={handleIdentifikasiChange} className="input-field" /></div>
 
-                            <div>
-                                <label className="label-text">Nomor Polisi</label>
-                                <input type="text" name="nomorPolisi" value={identifikasi.nomorPolisi} onChange={handleIdentifikasiChange} className="input-field" placeholder="DK 1234 AB" />
-                            </div>
-                            <div>
-                                <label className="label-text">Dokumen Kepemilikan</label>
-                                <select name="dokumen" value={identifikasi.dokumen} onChange={handleIdentifikasiChange} className="input-field bg-white">
-                                    <option value="BPKB & STNK">BPKB & STNK Lengkap</option>
-                                    <option value="Hanya BPKB">Hanya BPKB</option>
-                                    <option value="Hanya STNK">Hanya STNK</option>
-                                    <option value="Tidak Ada">Tidak Ada</option>
-                                </select>
-                            </div>
+                            <div><label className="label-text">Masa Berlaku Dokumen</label><select name="masaBerlaku" value={identifikasi.masaBerlaku} onChange={handleIdentifikasiChange} className="input-field bg-white"><option value="Masih Berlaku">Masih Berlaku</option><option value="Habis Masa Berlaku">Habis Masa Berlaku</option></select></div>
+                            <div><label className="label-text">Penggunaan Kendaraan</label><input type="text" name="penggunaan" value={identifikasi.penggunaan} onChange={handleIdentifikasiChange} className="input-field" /></div>
+                            <div><label className="label-text">Keterangan Lain</label><input type="text" name="keteranganLain" value={identifikasi.keteranganLain} onChange={handleIdentifikasiChange} className="input-field" placeholder="(Opsional)" /></div>
+
+                            {/* Fisik */}
+                            <div><label className="label-text">Warna</label><input type="text" name="warna" value={identifikasi.warna} onChange={handleIdentifikasiChange} className="input-field" /></div>
+                            <div><label className="label-text">Bahan Bakar</label><select name="bahanBakar" value={identifikasi.bahanBakar} onChange={handleIdentifikasiChange} className="input-field bg-white"><option value="Bensin">Bensin</option><option value="Solar">Solar</option><option value="Listrik">Listrik</option></select></div>
                             <div>
                                 <label className="label-text text-mckinsey-green">Kondisi Fisik Kendaraan</label>
                                 <select name="kondisiKendaraan" value={identifikasi.kondisiKendaraan} onChange={handleIdentifikasiChange} className="input-field bg-mckinsey-light font-semibold text-mckinsey-dark">
-                                    <option value={1.0}>Baik / Normal (100%)</option>
-                                    <option value={0.8}>Rusak Ringan (80%)</option>
-                                    <option value={0.7}>Kerusakan sd 80% (Faktor Pengali 0.7)</option>
-                                    <option value={0.6}>Kerusakan 80-90% (Faktor Pengali 0.6)</option>
-                                    <option value={0.1}>Scrap / Rongsok (Faktor Pengali 0.1)</option>
+                                    <option value={1.0}>Baik / Normal (1.0)</option>
+                                    <option value={0.7}>Rusak spd 80% (0.7)</option>
+                                    <option value={0.6}>Rusak 80%-90% (0.6)</option>
+                                    <option value={0.5}>Rusak diatas 90% (0.5)</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
-                    {/* 2. Data Lelang */}
+                    {/* 2. Data Lelang & 3. Penyesuaian sama seperti sebelumnya (Di ringkas UI nya agar hemat ruang di layar) */}
+                    {/* Data Lelang */}
                     <div className="card mb-8 overflow-x-auto">
                         <div className="bg-mckinsey-green text-white p-4 rounded-t-sm flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                <i data-lucide="database" className="w-5 h-5"></i>
-                                <h2 className="text-lg font-semibold">2. Data Hasil Lelang (Pembanding)</h2>
-                            </div>
-                            <button onClick={addLelang} className="no-print bg-white text-mckinsey-green px-3 py-1 rounded text-sm font-semibold hover:bg-gray-100 transition shadow">
-                                + Tambah Pembanding
-                            </button>
+                            <h2 className="text-lg font-semibold">Data Hasil Lelang & Penyesuaian</h2>
+                            <button onClick={addLelang} className="bg-white text-mckinsey-green px-3 py-1 rounded text-sm font-semibold hover:bg-gray-100">+ Tambah</button>
                         </div>
-                        <table className="w-full min-w-[800px]">
+                        <table className="ui-table w-full min-w-[1000px]">
                             <thead>
                                 <tr>
-                                    <th className="w-10">No</th>
-                                    <th>Asal KPKNL / Lokasi</th>
-                                    <th>Kode Lelang</th>
-                                    <th>Tipe/Merek</th>
-                                    <th>Harga Lelang (Rp)</th>
-                                    <th className="w-24">Waktu (Thn)</th>
-                                    <th className="w-24">Kat. Lokasi</th>
-                                    <th className="w-24">Thn Buat</th>
-                                    <th className="no-print w-10"></th>
+                                    <th className="w-8">No</th>
+                                    <th>Asal Lelang</th>
+                                    <th>Kode / Tipe</th>
+                                    <th>Harga (Rp)</th>
+                                    <th>Waktu/Kat/Thn</th>
+                                    <th className="bg-yellow-600">Adj Tipe/Merk</th>
+                                    <th className="bg-yellow-600">Adj Waktu/Lok/Thn</th>
+                                    <th className="bg-mckinsey-dark text-right">Nilai Taksiran</th>
+                                    <th className="w-8"></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {lelang.map((item, index) => (
-                                    <tr key={item.id} className="hover:bg-gray-50">
-                                        <td className="text-center text-gray-500 font-semibold">{index + 1}</td>
-                                        <td><input type="text" value={item.namaKPKNL} onChange={(e) => handleLelangChange(index, 'namaKPKNL', e.target.value)} className="input-field" placeholder="KPKNL Denpasar" /></td>
-                                        <td><input type="text" value={item.kodeLelang} onChange={(e) => handleLelangChange(index, 'kodeLelang', e.target.value)} className="input-field" placeholder="XYZ123" /></td>
-                                        <td><input type="text" value={item.tipe} onChange={(e) => handleLelangChange(index, 'tipe', e.target.value)} className="input-field" placeholder="Scoopy" /></td>
-                                        <td><input type="number" value={item.harga} onChange={(e) => handleLelangChange(index, 'harga', e.target.value)} className="input-field font-semibold text-right" /></td>
-                                        <td><input type="number" value={item.waktuLelang} onChange={(e) => handleLelangChange(index, 'waktuLelang', e.target.value)} className="input-field text-center" /></td>
-                                        <td><input type="number" value={item.kategoriLokasi} onChange={(e) => handleLelangChange(index, 'kategoriLokasi', e.target.value)} className="input-field text-center" /></td>
-                                        <td><input type="number" value={item.tahunPembuatan} onChange={(e) => handleLelangChange(index, 'tahunPembuatan', e.target.value)} className="input-field text-center" /></td>
-                                        <td className="no-print">
-                                            <button onClick={() => removeLelang(index)} className="text-red-500 hover:text-red-700 p-1" title="Hapus"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {lelang.length === 0 && <tr><td colSpan="9" className="text-center py-4 text-gray-500">Belum ada data pembanding.</td></tr>}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* 3. Penyesuaian */}
-                    <div className="card mb-8 overflow-x-auto">
-                        <div className="bg-mckinsey-green text-white p-4 rounded-t-sm flex items-center gap-2">
-                            <i data-lucide="sliders" className="w-5 h-5"></i>
-                            <h2 className="text-lg font-semibold">3. Penyesuaian Otomatis & Perhitungan (%)</h2>
-                        </div>
-                        <div className="p-4 bg-yellow-50 border-b border-yellow-100 text-sm text-yellow-800">
-                            <strong>Info:</strong> Kolom Waktu, Lokasi, dan Tahun Pembuatan dihitung otomatis dari selisih dengan data objek. Anda dapat mengedit/menyesuaikan nilainya secara manual (Professional Judgement).
-                        </div>
-                        <table className="w-full min-w-[800px]">
-                            <thead>
-                                <tr>
-                                    <th className="w-10">No</th>
-                                    <th>Pembanding</th>
-                                    <th className="w-20">Tipe %</th>
-                                    <th className="w-20">Merek %</th>
-                                    <th className="w-20">Waktu %</th>
-                                    <th className="w-20">Lokasi %</th>
-                                    <th className="w-24">Thn Buat %</th>
-                                    <th className="bg-mckinsey-dark text-center">Total Penyesuaian</th>
-                                    <th className="bg-mckinsey-dark text-right">Nilai Taksiran (Rp)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {lelang.map((item, index) => (
-                                    <tr key={item.id}>
-                                        <td className="text-center text-gray-500 font-semibold">{index + 1}</td>
-                                        <td className="font-medium text-gray-700">{item.namaKPKNL || 'Pembanding ' + (index+1)}</td>
-                                        <td><input type="number" step="0.1" value={item.adjTipe} onChange={(e) => handleLelangChange(index, 'adjTipe', e.target.value)} className="input-field text-center" /></td>
-                                        <td><input type="number" step="0.1" value={item.adjMerek} onChange={(e) => handleLelangChange(index, 'adjMerek', e.target.value)} className="input-field text-center" /></td>
-                                        <td><input type="number" step="0.1" value={item.adjWaktu} onChange={(e) => handleLelangChange(index, 'adjWaktu', e.target.value)} className="input-field text-center bg-gray-50" /></td>
-                                        <td><input type="number" step="0.1" value={item.adjLokasi} onChange={(e) => handleLelangChange(index, 'adjLokasi', e.target.value)} className="input-field text-center bg-gray-50" /></td>
-                                        <td><input type="number" step="0.1" value={item.adjTahun} onChange={(e) => handleLelangChange(index, 'adjTahun', e.target.value)} className="input-field text-center bg-gray-50" /></td>
-                                        <td className="text-center font-bold text-mckinsey-green bg-mckinsey-light">{perhitungan.hasilLelang[index]?.totalAdjPercent.toFixed(1)}%</td>
-                                        <td className="text-right font-bold text-gray-800">{formatRp(perhitungan.hasilLelang[index]?.nilaiTaksiranRow)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* 4. Hasil Perhitungan Akhir */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                        <div className="card p-0 overflow-hidden">
-                            <div className="bg-mckinsey-green text-white p-4">
-                                <h2 className="text-lg font-semibold flex items-center gap-2"><i data-lucide="calculator" className="w-5 h-5"></i> Ringkasan Nilai</h2>
-                            </div>
-                            <div className="p-6 space-y-4">
-                                <div className="flex justify-between items-center border-b pb-2">
-                                    <span className="text-gray-600">Rata-rata Nilai Taksiran</span>
-                                    <span className="font-semibold">{formatRp(perhitungan.rataRata)}</span>
-                                </div>
-                                <div className="flex justify-between items-center border-b pb-2">
-                                    <span className="text-gray-600">Faktor Kondisi Kendaraan</span>
-                                    <span className="font-semibold text-orange-600">x {identifikasi.kondisiKendaraan}</span>
-                                </div>
-                                <div className="flex justify-between items-center border-b pb-2">
-                                    <span className="text-gray-600">Taksiran Nilai Limit Lelang</span>
-                                    <span className="font-semibold">{formatRp(perhitungan.taksiranLimit)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="card bg-mckinsey-dark text-white p-8 flex flex-col justify-center items-center text-center shadow-lg border-0 relative overflow-hidden">
-                            {/* Decorative element */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-bl-full"></div>
-                            
-                            <h3 className="text-mckinsey-light text-lg mb-2 uppercase tracking-wider font-semibold">Pembulatan Nilai Taksiran Akhir</h3>
-                            <div className="text-4xl md:text-5xl font-bold text-mckinsey-accent mb-4 tracking-tight drop-shadow-md">
-                                {formatRp(perhitungan.pembulatan)}
-                            </div>
-                            <p className="text-sm text-gray-300 bg-black bg-opacity-20 py-2 px-4 rounded-full border border-gray-600">Dibulatkan ke ribuan ke atas</p>
-                        </div>
-                    </div>
-
-                    {/* 5. Panitia Penaksir */}
-                    <div className="card mb-8">
-                        <div className="bg-mckinsey-green text-white p-4 rounded-t-sm flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                <i data-lucide="users" className="w-5 h-5"></i>
-                                <h2 className="text-lg font-semibold">5. Panitia Penaksir</h2>
-                            </div>
-                            <button onClick={addPanitia} className="no-print bg-white text-mckinsey-green px-3 py-1 rounded text-sm font-semibold hover:bg-gray-100 transition shadow">
-                                + Tambah Anggota
-                            </button>
-                        </div>
-                        <table className="w-full">
-                            <thead>
-                                <tr>
-                                    <th className="w-10">No</th>
-                                    <th>Nama Lengkap</th>
-                                    <th>NIP</th>
-                                    <th>Jabatan dalam Panitia</th>
-                                    <th className="no-print w-10"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {panitia.map((item, index) => (
-                                    <tr key={item.id}>
-                                        <td className="text-center text-gray-500 font-semibold">{index + 1}</td>
-                                        <td><input type="text" value={item.nama} onChange={(e) => handlePanitiaChange(index, 'nama', e.target.value)} className="input-field" placeholder="Nama..." /></td>
-                                        <td><input type="text" value={item.nip} onChange={(e) => handlePanitiaChange(index, 'nip', e.target.value)} className="input-field" placeholder="NIP..." /></td>
+                                    <tr key={item.id} className="hover:bg-gray-50 align-top">
+                                        <td className="text-center text-gray-500 font-semibold pt-4">{index + 1}</td>
+                                        <td><input type="text" value={item.namaKPKNL} onChange={(e) => handleLelangChange(index, 'namaKPKNL', e.target.value)} className="input-field mb-1" placeholder="KPKNL..." /></td>
                                         <td>
-                                            <select value={item.jabatan} onChange={(e) => handlePanitiaChange(index, 'jabatan', e.target.value)} className="input-field bg-white">
-                                                <option value="Ketua">Ketua</option>
-                                                <option value="Sekretaris">Sekretaris</option>
-                                                <option value="Anggota">Anggota</option>
-                                            </select>
+                                            <input type="text" value={item.kodeLelang} onChange={(e) => handleLelangChange(index, 'kodeLelang', e.target.value)} className="input-field mb-1" placeholder="Kode..." />
+                                            <input type="text" value={item.tipe} onChange={(e) => handleLelangChange(index, 'tipe', e.target.value)} className="input-field" placeholder="Tipe..." />
                                         </td>
-                                        <td className="no-print">
-                                            <button onClick={() => removePanitia(index)} className="text-red-500 hover:text-red-700 p-1" title="Hapus"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
+                                        <td><input type="number" value={item.harga} onChange={(e) => handleLelangChange(index, 'harga', e.target.value)} className="input-field font-semibold text-right" /></td>
+                                        <td>
+                                            <div className="flex gap-1 mb-1">
+                                                <input type="number" value={item.waktuLelang} onChange={(e) => handleLelangChange(index, 'waktuLelang', e.target.value)} className="input-field w-1/3 text-center px-1" title="Tahun Lelang" />
+                                                <input type="number" value={item.kategoriLokasi} onChange={(e) => handleLelangChange(index, 'kategoriLokasi', e.target.value)} className="input-field w-1/3 text-center px-1" title="Kategori" />
+                                                <input type="number" value={item.tahunPembuatan} onChange={(e) => handleLelangChange(index, 'tahunPembuatan', e.target.value)} className="input-field w-1/3 text-center px-1" title="Tahun Buat" />
+                                            </div>
                                         </td>
+                                        <td>
+                                            <div className="flex gap-1">
+                                                <input type="number" step="0.1" value={item.adjTipe} onChange={(e) => handleLelangChange(index, 'adjTipe', e.target.value)} className="input-field w-1/2 text-center" title="Adj Tipe" />
+                                                <input type="number" step="0.1" value={item.adjMerek} onChange={(e) => handleLelangChange(index, 'adjMerek', e.target.value)} className="input-field w-1/2 text-center" title="Adj Merek" />
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="flex gap-1 bg-gray-100 p-1 rounded">
+                                                <input type="number" step="0.1" value={item.adjWaktu} onChange={(e) => handleLelangChange(index, 'adjWaktu', e.target.value)} className="input-field text-center px-1" />
+                                                <input type="number" step="0.1" value={item.adjLokasi} onChange={(e) => handleLelangChange(index, 'adjLokasi', e.target.value)} className="input-field text-center px-1" />
+                                                <input type="number" step="0.1" value={item.adjTahun} onChange={(e) => handleLelangChange(index, 'adjTahun', e.target.value)} className="input-field text-center px-1" />
+                                            </div>
+                                        </td>
+                                        <td className="text-right">
+                                            <div className="text-xs text-mckinsey-green font-bold mb-1">Total Adj: {perhitungan.hasilLelang[index]?.totalAdjPercent.toFixed(1)}%</div>
+                                            <div className="font-bold text-gray-800">{formatRp(perhitungan.hasilLelang[index]?.nilaiTaksiranRow)}</div>
+                                        </td>
+                                        <td className="pt-4"><button onClick={() => removeLelang(index)} className="text-red-500"><i data-lucide="trash-2" className="w-4 h-4"></i></button></td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
 
-                    {/* Actions */}
-                    <div className="no-print flex flex-col sm:flex-row gap-4 justify-end mt-8 border-t pt-6">
-                        <button onClick={exportToExcel} className="flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-mckinsey-green text-mckinsey-green font-semibold rounded hover:bg-green-50 transition shadow-sm">
+                    {/* Ringkasan & Panitia */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        {/* Panitia */}
+                        <div className="card">
+                            <div className="bg-mckinsey-green text-white p-4 flex justify-between items-center rounded-t-sm">
+                                <h2 className="font-semibold">Panitia Penaksir</h2>
+                                <button onClick={addPanitia} className="bg-white text-mckinsey-green px-2 py-1 rounded text-xs">+ Tambah</button>
+                            </div>
+                            <table className="ui-table w-full">
+                                <tbody>
+                                    {panitia.map((item, index) => (
+                                        <tr key={item.id}>
+                                            <td><input type="text" value={item.nama} onChange={(e) => handlePanitiaChange(index, 'nama', e.target.value)} className="input-field py-1 text-sm" placeholder="Nama" /></td>
+                                            <td><input type="text" value={item.nip} onChange={(e) => handlePanitiaChange(index, 'nip', e.target.value)} className="input-field py-1 text-sm" placeholder="NIP" /></td>
+                                            <td><select value={item.jabatan} onChange={(e) => handlePanitiaChange(index, 'jabatan', e.target.value)} className="input-field py-1 text-sm bg-white"><option>Ketua</option><option>Anggota</option></select></td>
+                                            <td><button onClick={() => removePanitia(index)} className="text-red-500"><i data-lucide="x" className="w-4 h-4"></i></button></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Hasil Akhir */}
+                        <div className="card bg-mckinsey-dark text-white p-6 flex flex-col justify-center items-center text-center shadow-lg border-0">
+                            <h3 className="text-mckinsey-light text-sm uppercase tracking-wider mb-2">Nilai Taksiran Akhir (Pembulatan)</h3>
+                            <div className="text-4xl font-bold text-mckinsey-accent mb-4">{formatRp(perhitungan.pembulatan)}</div>
+                            <div className="text-xs text-gray-300 w-full text-left space-y-1 mt-2 border-t border-gray-600 pt-2">
+                                <div className="flex justify-between"><span>Rata-rata:</span> <span>{formatRp(perhitungan.rataRata)}</span></div>
+                                <div className="flex justify-between"><span>Faktor Kondisi:</span> <span>x {identifikasi.kondisiKendaraan}</span></div>
+                                <div className="flex justify-between font-semibold"><span>Limit:</span> <span>{formatRp(perhitungan.taksiranLimit)}</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Actions Workflow */}
+                    <div className="flex flex-col sm:flex-row gap-4 justify-end items-center mt-8 border-t border-gray-300 pt-6 bg-white p-4 rounded-lg shadow-sm">
+                        {saveMessage && <span className="text-blue-600 font-semibold bg-blue-50 px-4 py-2 rounded">{saveMessage}</span>}
+                        <button onClick={saveProgress} className="flex items-center gap-2 px-6 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded hover:bg-blue-50">
+                            <i data-lucide="save" className="w-5 h-5"></i> Simpan
+                        </button>
+                        
+                        <div className="h-8 border-l-2 border-gray-300 hidden sm:block"></div>
+                        <span className="text-sm text-gray-500 hidden md:inline">Langkah 1:</span>
+                        
+                        <button onClick={exportToExcel} className="flex items-center gap-2 px-6 py-3 bg-green-50 border-2 border-mckinsey-green text-mckinsey-green font-semibold rounded hover:bg-green-100 transition shadow-sm">
                             <i data-lucide="file-spreadsheet" className="w-5 h-5"></i> Export ke Excel
                         </button>
-                        <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-6 py-3 bg-mckinsey-green text-white font-semibold rounded hover:bg-mckinsey-dark transition shadow-md">
-                            <i data-lucide="printer" className="w-5 h-5"></i> Cetak Laporan (PDF)
+                        
+                        <i data-lucide="arrow-right" className="w-5 h-5 text-gray-400 hidden sm:block"></i>
+                        <span className="text-sm text-gray-500 hidden md:inline">Langkah 2:</span>
+
+                        <button 
+                            onClick={isExcelExported ? exportToPDF : undefined} 
+                            disabled={!isExcelExported}
+                            className={`flex items-center gap-2 px-6 py-3 font-semibold rounded transition shadow-md ${isExcelExported ? 'bg-mckinsey-green text-white hover:bg-mckinsey-dark' : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-70'}`}
+                            title={!isExcelExported ? "Silakan Export ke Excel terlebih dahulu!" : "Cetak PDF berformat Excel"}
+                        >
+                            <i data-lucide={isExcelExported ? "file-check" : "lock"} className="w-5 h-5"></i> Cetak PDF
                         </button>
+                    </div>
+
+
+                    {/* ========================================================= */}
+                    {/* HIDDEN PDF TEMPLATE - MURNI MENIRU FORMAT EXCEL/PDF USER  */}
+                    {/* ========================================================= */}
+                    <div style={{ overflow: 'hidden', height: 0, width: 0, position: 'absolute', zIndex: -9999 }}>
+                        {isExportingPDF && (
+                            <div id="pdf-template" style={{ width: '210mm', minHeight: '297mm', padding: '15mm 10mm', backgroundColor: 'white' }}>
+                                
+                                {/* Header / Kop */}
+                                <table className="no-border-table w-full mb-4">
+                                    <tbody>
+                                        <tr>
+                                            <td style={{ width: '80px', verticalAlign: 'top' }}>
+                                                {logoUrl && <img src={logoUrl} style={{ width: '70px', height: '70px', objectFit: 'contain' }} alt="Logo" />}
+                                            </td>
+                                            <td style={{ verticalAlign: 'top', paddingLeft: '10px' }}>
+                                                <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '2px' }}>KERTAS KERJA ANALISIS PENENTUAN NILAI TAKSIRAN BMN</div>
+                                                <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '2px' }}>{identifikasi.namaSatker ? identifikasi.namaSatker.toUpperCase() : "KEMENTERIAN / LEMBAGA"}</div>
+                                                <div style={{ fontWeight: 'bold', fontSize: '14px' }}>TUJUAN PEMINDAHTANGANAN DENGAN PENJUALAN SECARA LELANG</div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <table className="no-border-table w-full mb-4" style={{ fontSize: '12px' }}>
+                                    <tbody><tr><td style={{ width: '150px' }}>Nomor Kertas Kerja</td><td>: {identifikasi.nomorLaporan}</td></tr></tbody>
+                                </table>
+
+                                {/* 1. Identifikasi */}
+                                <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '4px' }}>1 Identifikasi</div>
+                                <table className="no-border-table w-full mb-4" style={{ fontSize: '11px' }}>
+                                    <tbody>
+                                        <tr>
+                                            <td style={{ width: '20px' }}>a.</td><td style={{ width: '130px' }}>Nama Objek</td><td style={{ width: '150px' }}>: {identifikasi.namaObjek}</td>
+                                            <td style={{ width: '40px' }}>NUP</td><td>: {identifikasi.nup}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>b.</td><td>Lokasi Objek</td><td>: {identifikasi.lokasiObjek}</td>
+                                            <td>Kat Lokasi</td><td>: {identifikasi.kategoriLokasi}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>c.</td><td>Jenis Kendaraan</td><td colSpan="3">: 
+                                                <CheckBox checked={identifikasi.jenisKendaraan === 'Roda 2 atau 3'} label="Roda 2 atau 3" />
+                                                <CheckBox checked={identifikasi.jenisKendaraan === 'Roda 4 atau Lebih'} label="Roda 4 atau lebih" />
+                                            </td>
+                                        </tr>
+                                        <tr><td>d.</td><td>Merek Kendaraan</td><td colSpan="3">: {identifikasi.merek}</td></tr>
+                                        <tr><td>e.</td><td>Tipe Kendaraan</td><td colSpan="3">: {identifikasi.tipe}</td></tr>
+                                        <tr><td colSpan="5" style={{ height: '5px' }}></td></tr>
+                                        <tr><td>f.</td><td colSpan="4">Identitas Kendaraan :</td></tr>
+                                        <tr>
+                                            <td></td><td>(i) Nomor Polisi</td><td colSpan="3">: {identifikasi.nomorPolisi}</td>
+                                        </tr>
+                                        <tr>
+                                            <td></td><td>(ii) Dokumen Kepemilikan</td><td colSpan="3">: 
+                                                <CheckBox checked={identifikasi.dokumen === 'BPKB'} label="BPKB" />
+                                                <CheckBox checked={identifikasi.dokumen === 'STNK'} label="STNK" />
+                                                <CheckBox checked={identifikasi.dokumen === 'Lainnya'} label="Lainnya" />
+                                                <CheckBox checked={identifikasi.dokumen === 'Tidak Ada'} label="Tidak Ada" />
+                                            </td>
+                                        </tr>
+                                        <tr><td></td><td>(iii) Pemilik Dokumen</td><td colSpan="3">: {identifikasi.pemilikDokumen}</td></tr>
+                                        <tr>
+                                            <td></td><td>(iv) Masa Berlaku</td><td colSpan="3">: 
+                                                <CheckBox checked={identifikasi.masaBerlaku === 'Masih Berlaku'} label="Masih Berlaku" />
+                                                <CheckBox checked={identifikasi.masaBerlaku === 'Habis Masa Berlaku'} label="Habis Masa Berlaku" />
+                                            </td>
+                                        </tr>
+                                        <tr><td></td><td>(v) Penggunaan Kendaraan</td><td colSpan="3">: {identifikasi.penggunaan}</td></tr>
+                                        <tr><td></td><td>(vi) Keterangan Lain</td><td colSpan="3">: {identifikasi.keteranganLain || '-'}</td></tr>
+                                    </tbody>
+                                </table>
+
+                                {/* 2. Fisik Kendaraan */}
+                                <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '4px' }}>2 Fisik Kendaraan</div>
+                                <table className="no-border-table w-full mb-6" style={{ fontSize: '11px' }}>
+                                    <tbody>
+                                        <tr>
+                                            <td style={{ width: '20px' }}>a.</td><td style={{ width: '130px' }}>Warna</td><td style={{ width: '150px' }}>: {identifikasi.warna}</td>
+                                            <td style={{ width: '20px' }}>d.</td><td>Kondisi Kendaraan</td>
+                                        </tr>
+                                        <tr>
+                                            <td>b.</td><td>Tahun Pembuatan</td><td>: {identifikasi.tahunPembuatan}</td>
+                                            <td></td><td><CheckBox checked={identifikasi.kondisiKendaraan === 0.5} label="0,5 (Tingkat kerusakan diatas 90%)" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td>c.</td><td>Bahan Bakar</td><td>: {identifikasi.bahanBakar}</td>
+                                            <td></td><td><CheckBox checked={identifikasi.kondisiKendaraan === 0.6} label="0,6 (Tingkat kerusakan diatas 80%-90%)" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan="4"></td>
+                                            <td><CheckBox checked={identifikasi.kondisiKendaraan === 0.7} label="0,7 (Tingkat kerusakan sampai dengan 80%)" /></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                {/* Tabel Lelang */}
+                                <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '4px' }}>DATA HASIL LELANG</div>
+                                <table className="print-table">
+                                    <thead>
+                                        <tr>
+                                            <th style={{ width: '20px' }}>No</th>
+                                            <th>Data Hasil Lelang</th>
+                                            <th>Kode Lelang</th>
+                                            <th>Tipe</th>
+                                            <th>Harga Lelang</th>
+                                            <th>Waktu lelang</th>
+                                            <th>Kategori Lokasi Lelang</th>
+                                            <th>Tahun Pembuatan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {lelang.map((l, i) => (
+                                            <tr key={i}>
+                                                <td style={{ textAlign: 'center' }}>{i + 1}</td>
+                                                <td>{l.namaKPKNL}</td>
+                                                <td>{l.kodeLelang}</td>
+                                                <td>{l.tipe}</td>
+                                                <td style={{ textAlign: 'right' }}>{formatRp(l.harga)}</td>
+                                                <td style={{ textAlign: 'center' }}>{l.waktuLelang}</td>
+                                                <td style={{ textAlign: 'center' }}>{l.kategoriLokasi}</td>
+                                                <td style={{ textAlign: 'center' }}>{l.tahunPembuatan}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                {/* Tabel Penyesuaian */}
+                                <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '4px', marginTop: '15px' }}>PENYESUAIAN</div>
+                                <table className="print-table">
+                                    <thead>
+                                        <tr>
+                                            <th style={{ width: '20px' }}>No</th>
+                                            <th>Data Hasil Lelang</th>
+                                            <th>Tipe</th>
+                                            <th>Merek</th>
+                                            <th>Waktu</th>
+                                            <th>Lokasi</th>
+                                            <th>Tahun Pembuatan</th>
+                                            <th>Total</th>
+                                            <th>Nilai taksiran</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {perhitungan.hasilLelang.map((l, i) => (
+                                            <tr key={i}>
+                                                <td style={{ textAlign: 'center' }}>{i + 1}</td>
+                                                <td>{l.namaKPKNL}</td>
+                                                <td style={{ textAlign: 'center' }}>{l.adjTipe}%</td>
+                                                <td style={{ textAlign: 'center' }}>{l.adjMerek}%</td>
+                                                <td style={{ textAlign: 'center' }}>{l.adjWaktu}%</td>
+                                                <td style={{ textAlign: 'center' }}>{l.adjLokasi}%</td>
+                                                <td style={{ textAlign: 'center' }}>{l.adjTahun}%</td>
+                                                <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{l.totalAdjPercent.toFixed(1)}%</td>
+                                                <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{formatRp(l.nilaiTaksiranRow)}</td>
+                                            </tr>
+                                        ))}
+                                        <tr>
+                                            <td colSpan="7" style={{ border: 'none' }}></td>
+                                            <td style={{ fontWeight: 'bold' }}>Total Nilai Taksiran</td>
+                                            <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{formatRp(perhitungan.totalNilaiTaksiran)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan="7" style={{ border: 'none' }}></td>
+                                            <td style={{ fontWeight: 'bold' }}>Rata-rata Nilai Taksiran</td>
+                                            <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{formatRp(perhitungan.rataRata)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan="7" style={{ border: 'none' }}></td>
+                                            <td style={{ fontWeight: 'bold' }}>Taksiran Nilai Limit x {identifikasi.kondisiKendaraan}</td>
+                                            <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{formatRp(perhitungan.taksiranLimit)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan="7" style={{ border: 'none' }}></td>
+                                            <td style={{ fontWeight: 'bold', backgroundColor: '#e5e7eb' }}>PEMBULATAN</td>
+                                            <td style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: '#e5e7eb' }}>{formatRp(perhitungan.pembulatan)}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                {/* Tabel Panitia */}
+                                <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '4px', marginTop: '15px' }}>PANITIA PENAKSIR</div>
+                                <table className="print-table" style={{ width: '60%' }}>
+                                    <thead>
+                                        <tr><th style={{ width: '20px' }}>No</th><th>Nama</th><th>NIP</th><th>Jabatan</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        {panitia.map((p, i) => (
+                                            <tr key={i}>
+                                                <td style={{ textAlign: 'center' }}>{i + 1}</td><td>{p.nama}</td><td>{p.nip}</td><td style={{ textAlign: 'center' }}>{p.jabatan}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -507,9 +694,6 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-
-        // Initialize Icons after slight delay to ensure render
-        setTimeout(() => lucide.createIcons(), 100);
     </script>
 </body>
 </html>
