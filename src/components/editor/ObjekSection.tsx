@@ -10,9 +10,33 @@ import {
 } from "@/lib/calc";
 import { TARIF_TAHUN_PEMBUATAN } from "@/lib/ketentuan";
 import type { TujuanPenjualan } from "@/lib/ketentuan";
+import kpknlData from "@/data/kpknl.json";
+import type { Kpknl } from "@/lib/types";
 
 const PROVINSI = Object.keys(PROVINSI_WILAYAH).sort((a, b) =>
   a.localeCompare(b, "id")
+);
+
+const KPKNL_PER_PROVINSI: [string, Kpknl[]][] = (() => {
+  const map = new Map<string, Kpknl[]>();
+  for (const k of kpknlData as Kpknl[]) {
+    const daftar = map.get(k.provinsi) ?? [];
+    daftar.push(k);
+    map.set(k.provinsi, daftar);
+  }
+  return Array.from(map.entries())
+    .map(
+      ([provinsi, daftar]) =>
+        [
+          provinsi,
+          daftar.sort((a, b) => a.nama.localeCompare(b.nama, "id")),
+        ] as [string, Kpknl[]]
+    )
+    .sort((a, b) => a[0].localeCompare(b[0], "id"));
+})();
+
+const SEMUA_NAMA_KPKNL = new Set(
+  (kpknlData as Kpknl[]).map((k) => k.nama)
 );
 
 export function ObjekSection({
@@ -74,14 +98,29 @@ export function ObjekSection({
             ))}
           </select>
         </Field>
-        <Field label="KPKNL rencana pelaksanaan lelang">
-          <input
+        <Field
+          label="KPKNL rencana pelaksanaan lelang"
+          hint="Seluruh KPKNL (71 kantor) dikelompokkan per provinsi."
+        >
+          <select
             className="field"
-            list="daftar-kpknl"
             value={objek.kpknl}
             onChange={(e) => onChange({ kpknl: e.target.value })}
-            placeholder="Tulis atau pilih KPKNL"
-          />
+          >
+            <option value="">- Pilih KPKNL -</option>
+            {objek.kpknl && !SEMUA_NAMA_KPKNL.has(objek.kpknl) ? (
+              <option value={objek.kpknl}>{objek.kpknl}</option>
+            ) : null}
+            {KPKNL_PER_PROVINSI.map(([provinsi, daftar]) => (
+              <optgroup key={provinsi} label={provinsi}>
+                {daftar.map((k) => (
+                  <option key={k.nama} value={k.nama}>
+                    {k.nama}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
         </Field>
 
         <Field

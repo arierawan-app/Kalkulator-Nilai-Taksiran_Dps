@@ -21,7 +21,7 @@ Tata Cara Penentuan Nilai Taksiran (dokumen referensi tersedia di folder ini:
   pembuatan +/-5 tahun, kategori lokasi 1-4, faktor kondisi per tujuan
   penjualan (termasuk pengecualian tanpa dokumen kepemilikan = 0,5).
 - Panduan wilayah perluasan pencarian data per provinsi, termasuk urutan
-  khusus Bali dan Nusa Tenggara (satu provinsi -> Denpasar/Surabaya/Sidoarjo
+  khusus Bali dan Nusa Tenggara (satu provinsi -> Surabaya/Sidoarjo
   -> seluruh Indonesia) dan pengecualian Kota Batam/Sabang.
 - Output PDF dua lembar menyerupai format template resmi, pembulatan ke atas
   pada ribuan rupiah, dapat diunduh dan/atau disimpan ke Drive.

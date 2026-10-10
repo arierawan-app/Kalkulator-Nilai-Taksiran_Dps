@@ -99,7 +99,8 @@ describe("wilayah", () => {
   it("memetakan provinsi Bali ke wilayah Bali-Nusra", () => {
     const info = infoWilayah("Bali");
     expect(info?.key).toBe("bali_nusa_tenggara");
-    expect(info?.urutan[1]).toContain("Denpasar, Surabaya, dan Sidoarjo");
+    expect(info?.urutan[1]).toContain("Surabaya, dan Sidoarjo");
+    expect(info?.urutan[1]).not.toContain("Denpasar");
   });
 
   it("mendeteksi kota tanpa perluasan", () => {

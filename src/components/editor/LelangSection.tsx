@@ -11,7 +11,6 @@ import type { Kpknl } from "@/lib/types";
 const DAFTAR_KPKNL = kpknlData as Kpknl[];
 
 const KPKNL_URUTAN_KEDUA = new Set([
-  "KPKNL Denpasar",
   "KPKNL Surabaya",
   "KPKNL Sidoarjo",
   "KPKNL Makassar",

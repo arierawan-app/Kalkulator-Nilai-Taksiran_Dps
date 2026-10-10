@@ -61,7 +61,7 @@ export const WILAYAH: Record<
     label: "Bali dan Nusa Tenggara",
     urutan: [
       "Pertama: pada wilayah kerja KPKNL yang berada di satu provinsi",
-      "Kedua: pada wilayah kerja KPKNL Denpasar, Surabaya, dan Sidoarjo",
+      "Kedua: pada wilayah kerja KPKNL Surabaya, dan Sidoarjo",
       "Ketiga: pada semua wilayah kerja KPKNL di Indonesia",
     ],
   },
