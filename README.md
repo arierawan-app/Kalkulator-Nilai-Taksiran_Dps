@@ -55,6 +55,11 @@ legacy/index.html       prototipe lama (arsip)
      (mis. akun DJPb Anda). Selama status masih **Testing**, hanya akun uji
      yang dapat login. Scope `drive.file` termasuk non-sensitif sehingga tidak
      memerlukan verifikasi Google untuk produksi.
+   - **Penting**: selama status masih Testing, refresh token Google
+     kedaluwarsa setelah 7 hari sehingga autosave Drive akan meminta login
+     ulang setiap minggu. Setelah pengujian selesai, klik **Publish app**
+     pada OAuth consent screen agar sesi berjalan berkelanjutan (scope
+     `drive.file` non-sensitif, tidak diperlukan verifikasi Google).
 4. Menu **APIs & Services > Credentials > Create credentials > OAuth client ID**:
    - Application type: **Web application**.
    - **Authorized JavaScript origins**:
