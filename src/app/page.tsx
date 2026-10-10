@@ -10,41 +10,20 @@ export default async function Beranda() {
       <section className="px-8 py-12 lg:px-16 lg:py-20 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-garis">
         <div>
           <p className="text-sm font-semibold text-kuningan tracking-wide">
-            Direktorat Jenderal Kekayaan Negara - Penilaian BMN
+            KPKNL Denpasar
           </p>
           <h1 className="font-serif text-4xl lg:text-5xl font-bold text-tinta-900 mt-4 leading-tight max-w-xl">
-            Kertas kerja penentuan nilai taksiran kendaraan bermotor yang
-            menghitung dirinya sendiri.
+            Kalkulator Nilai Taksiran Kendaraan Bermotor
           </h1>
           <p className="mt-6 max-w-xl text-abu leading-relaxed">
-            Susun tabulasi data harga penjualan lelang, isi penyesuaian merek,
-            tipe, waktu, lokasi, dan tahun pembuatan mengikuti ketentuan,
-            lalu hasilkan kertas kerja analisis dua lembar beserta taksiran
-            nilai limit lelang - siap cetak dan tersimpan di Google Drive Anda.
+            Alat bantu penyusunan kertas kerja penentuan nilai taksiran
+            berdasarkan KMK Nomor 375 Tahun 2024.
           </p>
         </div>
-        <dl className="mt-12 grid sm:grid-cols-3 gap-6 max-w-2xl">
-          <div className="border-t border-garis pt-3">
-            <dt className="text-xs font-semibold text-abu">Data pembanding</dt>
-            <dd className="font-serif text-lg text-tinta mt-1">
-              3 - 7 data lelang, maks. 3 tahun ke belakang
-            </dd>
-          </div>
-          <div className="border-t border-garis pt-3">
-            <dt className="text-xs font-semibold text-abu">
-              Penyesuaian
-            </dt>
-            <dd className="font-serif text-lg text-tinta mt-1">
-              Merek, tipe, waktu, lokasi, tahun pembuatan
-            </dd>
-          </div>
-          <div className="border-t border-garis pt-3">
-            <dt className="text-xs font-semibold text-abu">Hasil</dt>
-            <dd className="font-serif text-lg text-tinta mt-1">
-              Nilai limit lelang, pembulatan ke atas ribuan
-            </dd>
-          </div>
-        </dl>
+        <p className="mt-12 max-w-xl border-t border-garis pt-3 text-sm text-abu leading-relaxed">
+          Data akan tersimpan pada Google Drive Anda, maka autentikasi akses
+          email dan Google Drive diperlukan.
+        </p>
       </section>
 
       <section className="px-8 py-12 lg:px-16 lg:py-20 flex items-center">
