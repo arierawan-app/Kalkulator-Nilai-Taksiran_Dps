@@ -102,6 +102,27 @@ npm run build      # build produksi
 4. Buka domain Vercel, login dengan akun Google yang terdaftar sebagai test
    user, lalu mulai menyusun kertas kerja.
 
+## Pemecahan masalah umum
+
+- **"has not completed the Google verification process ... can only be
+  accessed by developer-approved testers"**: aplikasi masih berstatus
+  **Testing** dan akun yang dipakai login belum masuk daftar test user.
+  Perbaikan: OAuth consent screen -> **Audience -> Test users -> Add users**,
+  masukkan alamat Gmail yang persis sama dengan akun yang dipakai login
+  (tunggu 1-5 menit, lalu coba lagi / gunakan jendela incognito). Solusi
+  permanen: klik **Publish app** pada OAuth consent screen agar semua akun
+  dapat login; scope `drive.file` non-sensitif sehingga tidak memerlukan
+  verifikasi Google.
+- **redirect_uri_mismatch**: URI di Google Cloud Console harus sama persis
+  dengan yang dipakai (skema http/https, port, dan tanpa garis miring di
+  akhir), termasuk `http://localhost:3000/api/auth/callback/google` dan
+  `https://<domain-vercel>/api/auth/callback/google`.
+- **Sesi berakhir setiap 7 hari saat masih Testing**: refresh token pada
+  status Testing memang kedaluwarsa 7 hari. Publish app untuk mengatasinya.
+- **Draf tidak tersimpan ke Drive / pita peringatan "Koneksi Google Drive
+  terputus"**: klik "Masuk ulang dengan Google" pada aplikasi; draf tetap
+  aman di perangkat dan akan tersinkron setelah login.
+
 ## Catatan kepatuhan
 
 - Perhitungan mengikuti dokumen Tata Cara: penyesuaian waktu 2%/tahun,
