@@ -2,6 +2,7 @@ import { getToken } from "next-auth/jwt";
 import { google } from "googleapis";
 import type { drive_v3 } from "googleapis";
 import type { NextRequest } from "next/server";
+import { deteksiNamaCookieSesi } from "./sesi";
 
 export const NAMA_FOLDER_DRIVE = "Kalkulator Nilai Taksiran";
 
@@ -37,6 +38,7 @@ export async function dapatkanAccessToken(
   const token = (await getToken({
     req,
     secret: process.env.AUTH_SECRET,
+    cookieName: deteksiNamaCookieSesi(req.headers.get("cookie")),
   })) as TokenGoogle | null;
   if (!token) return null;
   const masihValid =

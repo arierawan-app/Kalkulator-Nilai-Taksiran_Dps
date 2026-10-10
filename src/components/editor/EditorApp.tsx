@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { signOut } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { SatkerSection } from "./SatkerSection";
 import { PanitiaSection } from "./PanitiaSection";
 import { ObjekSection } from "./ObjekSection";
@@ -119,6 +119,7 @@ export function EditorApp({
         hour: "2-digit",
         minute: "2-digit",
       });
+      setButuhLoginUlang(false);
       setStatus({ mode: "saved", teks: `Tersimpan di Drive ${jam}` });
     } catch {
       setStatus({
@@ -256,6 +257,7 @@ export function EditorApp({
       const dok = normalisasiDokumen(data.dokumen);
       dok.fileId = fileId;
       kotor.current = false;
+      setButuhLoginUlang(false);
       setDokumen(dok);
       setBukaDokumen(false);
       setStatus({ mode: "saved", teks: "Dokumen dibuka dari Drive" });
@@ -305,6 +307,26 @@ export function EditorApp({
       alert("Gagal menyimpan PDF ke Drive.");
     } finally {
       setSibuk(false);
+    }
+  };
+
+  const cobaLagi = async () => {
+    setStatus({ mode: "saving", teks: "Menyambungkan ulang..." });
+    try {
+      const res = await fetch("/api/drive/documents");
+      if (!res.ok) {
+        setButuhLoginUlang(true);
+        setStatus({
+          mode: "error",
+          teks: "Masih terputus - silakan masuk ulang dengan Google",
+        });
+        return;
+      }
+      setButuhLoginUlang(false);
+      setStatus({ mode: "saved", teks: "Terhubung kembali ke Google Drive" });
+      if (dokumen) void simpanKeDrive(dokumen);
+    } catch {
+      setStatus({ mode: "error", teks: "Tidak dapat menghubungi server" });
     }
   };
 
@@ -369,12 +391,26 @@ export function EditorApp({
       </header>
 
       {butuhLoginUlang ? (
-        <div className="bg-stempel-soft border-b border-stempel/30 px-4 py-2 text-xs text-stempel">
-          Koneksi Google Drive terputus. Draf aman di perangkat ini.{" "}
-          <a className="underline font-semibold" href="/api/auth/signin">
-            Masuk ulang dengan Google
-          </a>{" "}
-          untuk melanjutkan penyimpanan otomatis.
+        <div className="border-b border-stempel/30 bg-stempel-soft px-4 py-2 text-xs text-stempel">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 lg:px-6">
+            <span className="mr-auto py-1">
+              Koneksi Google Drive terputus. Draf aman di perangkat ini.
+            </span>
+            <button
+              type="button"
+              className="tombol tombol-garis px-2.5 py-1 text-xs"
+              onClick={() => void cobaLagi()}
+            >
+              Coba sambungkan ulang
+            </button>
+            <button
+              type="button"
+              className="tombol tombol-stempel px-2.5 py-1 text-xs"
+              onClick={() => void signIn("google", { redirectTo: "/editor" })}
+            >
+              Masuk ulang dengan Google
+            </button>
+          </div>
         </div>
       ) : null}
 

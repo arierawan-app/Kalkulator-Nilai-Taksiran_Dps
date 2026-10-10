@@ -120,8 +120,10 @@ npm run build      # build produksi
 - **Sesi berakhir setiap 7 hari saat masih Testing**: refresh token pada
   status Testing memang kedaluwarsa 7 hari. Publish app untuk mengatasinya.
 - **Draf tidak tersimpan ke Drive / pita peringatan "Koneksi Google Drive
-  terputus"**: klik "Masuk ulang dengan Google" pada aplikasi; draf tetap
-  aman di perangkat dan akan tersinkron setelah login.
+  terputus"**: klik **Coba sambungkan ulang** pada aplikasi; bila masih
+  terputus klik **Masuk ulang dengan Google**. Draf tetap aman di perangkat
+  dan akan tersinkron setelah tersambung. Jika sering terjadi saat masih
+  Testing, publish app (refresh token Testing kedaluwarsa 7 hari).
 
 ## Catatan kepatuhan
 
