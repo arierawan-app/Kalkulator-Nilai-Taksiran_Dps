@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+@theme {
+  --color-kertas: #faf8f3;
+  --color-kertas-2: #f3f0e8;
+  --color-tinta: #143a5c;
+  --color-tinta-900: #0e2a43;
+  --color-tinta-700: #1d4c74;
+  --color-tinta-soft: #e9eff5;
+  --color-garis: #d9d3c6;
+  --color-garis-2: #e7e2d8;
+  --color-stempel: #a6322b;
+  --color-stempel-soft: #f6e9e7;
+  --color-kuningan: #a9852f;
+  --color-kuningan-soft: #f5efdf;
+  --color-abu: #6e6a5e;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "IBM Plex Serif", ui-serif, Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+html {
+  background: var(--color-kertas);
+}
+
+body {
+  background: var(--color-kertas);
+  color: var(--color-tinta-900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.angka {
+  font-variant-numeric: tabular-nums;
+}
+
+.field {
+  width: 100%;
+  border-radius: 2px;
+  border: 1px solid var(--color-garis);
+  background: #fff;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--color-tinta-900);
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.field:focus-visible {
+  border-color: var(--color-tinta);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-tinta) 15%, transparent);
+}
+
+.field[aria-invalid="true"] {
+  border-color: var(--color-stempel);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-stempel) 12%, transparent);
+}
+
+.label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--color-abu);
+  margin-bottom: 0.3rem;
+}
+
+.tombol {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.tombol:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tombol-utama {
+  background: var(--color-tinta);
+  color: #fff;
+}
+
+.tombol-utama:hover:not(:disabled) {
+  background: var(--color-tinta-900);
+}
+
+.tombol-garis {
+  background: #fff;
+  border-color: var(--color-garis);
+  color: var(--color-tinta);
+}
+
+.tombol-garis:hover:not(:disabled) {
+  border-color: var(--color-tinta);
+}
+
+.tombol-stempel {
+  background: var(--color-stempel);
+  color: #fff;
+}
+
+.seksi {
+  border-top: 2px solid var(--color-tinta-900);
+  padding-top: 1.1rem;
+}
+
+.seksi-nomor {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--color-kuningan);
+  font-size: 1.05rem;
+  margin-right: 0.4rem;
+}
+
+.kolom-rekap {
+  border: 1px solid var(--color-garis);
+  border-top: 3px double var(--color-tinta-900);
+  background: #fff;
+}
+
+dialog::backdrop {
+  background: rgb(14 42 67 / 0.45);
+}
+
+.stempel-badge {
+  display: inline-block;
+  border: 2px solid var(--color-stempel);
+  border-radius: 2px;
+  color: var(--color-stempel);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  padding: 0.2rem 0.5rem;
+  transform: rotate(-1.5deg);
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+}

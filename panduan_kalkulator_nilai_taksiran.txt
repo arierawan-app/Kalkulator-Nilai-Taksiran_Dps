@@ -1,0 +1,251 @@
+PANDUAN RINGKAS PEMBUATAN APLIKASI KALKULATOR NILAI TAKSIRAN
+Kendaraan Bermotor BMN - dirangkum dari Tata Cara Penentuan Nilai Taksiran
+
+1. TUJUAN DAN METODE
+
+Aplikasi membantu menghitung nilai taksiran kendaraan bermotor BMN selain
+tanah dan bangunan. Metode yang digunakan adalah perbandingan harga hasil
+penjualan lelang kendaraan sejenis. Data pembanding disesuaikan terhadap
+waktu transaksi, tahun pembuatan, tipe, merek, dan lokasi. Nilai rata-rata
+hasil penyesuaian kemudian dikalikan faktor kondisi sesuai tujuan penjualan.
+
+Aplikasi sebaiknya menampilkan proses dan asal-usul setiap angka, bukan hanya
+hasil akhir, agar perhitungan dapat diperiksa dan dituangkan ke kertas kerja.
+
+2. DATA YANG PERLU DIINPUT
+
+A. Objek yang ditaksir
+- Tujuan penjualan: melalui lelang atau tanpa melalui lelang.
+- Tanggal/tahun penentuan nilai taksiran.
+- Nama objek, NUP, lokasi rencana penjualan, KPKNL, dan kategori lokasi (1-4).
+- Jenis kendaraan: roda 2/3 atau roda 4 atau lebih.
+- Merek, tipe, kapasitas silinder (cc), dan tahun pembuatan.
+- Kondisi/tingkat kerusakan: di atas 90%; di atas 80% sampai dengan 90%;
+  atau sampai dengan 80%.
+- Status dokumen kepemilikan (misalnya BPKB, STNK, dokumen lain, atau tidak ada).
+- Data kertas kerja yang diperlukan, seperti warna, nomor polisi, pemilik
+  dokumen, masa berlaku, bahan bakar, penggunaan, dan keterangan lain.
+
+B. Setiap data pembanding hasil lelang
+- Harga/nilai yang terbentuk dalam lelang.
+- Merek, tipe dan spesifikasi kendaraan.
+- Tahun pembuatan.
+- Tanggal/tahun serta lokasi lelang dan kategori lokasi.
+- Kode/identitas lelang dan sumber data.
+
+C. Data tambahan untuk penyesuaian merek
+- Harga baru atau harga jual pasar saat ini untuk kendaraan yang ditaksir
+  dan kendaraan pembanding, jika penyesuaian merek diperlukan.
+
+3. KLASIFIKASI KENDARAAN BERDASARKAN KAPASITAS SILINDER
+
+Roda 2 atau roda 3:
+- Low-end: sampai dengan 100 cc.
+- Middle: di atas 100 cc sampai dengan 150 cc.
+- High-end: di atas 150 cc.
+
+Roda 4 atau lebih:
+- Low-end: sampai dengan 1.200 cc.
+- Middle: di atas 1.200 cc sampai dengan 2.500 cc.
+- High-end: di atas 2.500 cc.
+
+Kelas ini menentukan persentase penyesuaian tahun pembuatan. Jangan
+mencampur kelas kapasitas silinder tersebut dengan peringkat spesifikasi tipe
+kendaraan yang dipakai untuk penyesuaian tipe.
+
+4. PEMILIHAN DATA PEMBANDING
+
+Persyaratan utama:
+- Gunakan minimal 3 dan maksimal 7 data pembanding.
+- Data transaksi lelang paling lama 3 tahun sebelum tahun penilaian.
+- Tahun pembuatan kendaraan pembanding diutamakan sama dengan objek.
+  Jika tidak tersedia, gunakan rentang sampai 5 tahun lebih tua atau 5 tahun
+  lebih muda; prioritaskan tahun yang paling dekat.
+- Utamakan merek dan tipe yang sama. Jika tidak cukup, perluas sesuai urutan
+  pencarian di bawah.
+
+Urutan pencarian komprehensif:
+1. Wilayah KPKNL pelaksana; merek, tipe, dan tahun pembuatan sama.
+2. Wilayah perluasan urutan pertama; merek, tipe, dan tahun sama.
+3. Wilayah KPKNL pelaksana; merek sama, tipe berbeda, tahun dalam rentang
+   +/- 5 tahun.
+4. Wilayah perluasan urutan pertama; merek sama, tipe berbeda, tahun +/- 5.
+5. Wilayah perluasan urutan kedua; merek, tipe, dan tahun sama.
+6. Wilayah perluasan urutan kedua; merek sama, tipe berbeda, tahun +/- 5.
+7. Wilayah perluasan urutan ketiga; merek, tipe, dan tahun sama.
+8. Wilayah perluasan urutan ketiga; merek sama, tipe berbeda, tahun +/- 5.
+9. Wilayah KPKNL pelaksana; merek berbeda, tetapi tipe/spesifikasi sama atau
+   mendekati, tahun dalam rentang +/- 5 tahun.
+10. Wilayah perluasan urutan pertama, kedua, dan ketiga; merek berbeda,
+    tetapi tipe/spesifikasi sama atau mendekati, tahun +/- 5 tahun.
+
+Aturan jumlah data saat memperluas pencarian:
+- Jika jumlah terkumpul masih kurang dari 3, lanjutkan ke tahap berikutnya.
+- Jika jumlah terkumpul 3 sampai 7, gunakan seluruh data tersebut.
+- Jika jumlah akan melebihi 7, pertahankan data tahap sebelumnya lalu pilih
+  data dengan harga/nilai lelang terendah dari tahap pencarian terakhir sampai
+  jumlah total tepat 7.
+- Jika setelah tahap 10 jumlahnya masih kurang dari 3, tandai bahwa data
+  belum memenuhi jumlah minimum dan minta penelaahan; jangan menyajikan hasil
+  seolah-olah memenuhi ketentuan.
+
+Urutan perluasan wilayah bergantung lokasi rencana lelang:
+- Jawa: KPKNL yang berbatasan langsung, lalu seluruh Jawa, lalu seluruh
+  Indonesia.
+- Sumatera: KPKNL yang berbatasan langsung, lalu seluruh Sumatera dan KPKNL
+  Jakarta/Bogor/Tangerang/Bekasi, lalu seluruh Indonesia.
+- Kalimantan Barat: KPKNL di provinsi Kalimantan Barat, lalu KPKNL
+  Jakarta/Bogor/Tangerang/Bekasi, lalu seluruh Indonesia.
+- Kalimantan Utara/Timur/Tengah/Selatan: KPKNL di provinsi-provinsi tersebut,
+  lalu KPKNL Surabaya dan Sidoarjo, lalu seluruh Indonesia.
+- Sulawesi, Maluku, dan Papua: KPKNL dalam satu provinsi, lalu KPKNL Makassar,
+  Surabaya, dan Sidoarjo, lalu seluruh Indonesia.
+- Bali dan Nusa Tenggara: KPKNL dalam satu provinsi, lalu KPKNL Denpasar,
+  Surabaya, dan Sidoarjo, lalu seluruh Indonesia.
+- Batam dan Sabang: perluasan wilayah tidak berlaku. Data lelang Batam atau
+  Sabang tidak boleh menjadi pembanding untuk objek di luar kota masing-masing.
+
+Rute wilayah dan kategori lokasi sebaiknya disimpan sebagai data referensi
+agar dapat diperbarui. Kategori lokasi KPKNL ditetapkan berdasarkan analisis
+yang diperbarui pada Januari dan Juli setiap tahun.
+
+5. RUMUS PENYESUAIAN PER DATA
+
+Hitung setiap penyesuaian sebagai persentase dari harga lelang pembanding.
+Persentase total adalah jumlah (penjumlahan) penyesuaian yang berlaku pada
+baris tersebut, sebagaimana ditunjukkan oleh contoh kertas kerja.
+
+A. Waktu/tahun transaksi
+Penyesuaian waktu = (tahun penilaian - tahun lelang) x 2%.
+Data pada tahun yang sama mendapat 0%; data yang lebih lama mendapat
+penyesuaian positif sesuai selisih tahun.
+
+B. Tahun pembuatan
+Penyesuaian tahun = (tahun objek - tahun pembanding) x tarif kelas.
+Tarif untuk setiap selisih satu tahun:
+- Low-end: 5%.
+- Middle: 7%.
+- High-end: 10%.
+
+C. Tipe kendaraan
+- Tipe dengan spesifikasi setara: 0%.
+- Jika tipe pembanding lebih superior daripada objek: penyesuaian negatif.
+- Jika tipe pembanding lebih inferior daripada objek: penyesuaian positif.
+- Besaran: 8% untuk setiap tingkat/perbedaan kelas spesifikasi tipe.
+
+Urutan superior-inferior tipe mungkin perlu ditentukan oleh penaksir atau
+master data; dokumen tidak memberikan daftar peringkat universal untuk semua
+model kendaraan.
+
+D. Merek kendaraan
+Penyesuaian merek hanya digunakan jika merek objek tidak tersedia pada data
+harga lelang. Gunakan kendaraan pembanding dengan spesifikasi sama atau paling
+mendekati, lalu hitung:
+
+Faktor penyesuaian merek = (NJT - NJP) / NJP
+
+NJT = harga baru/harga pasar objek yang ditaksir.
+NJP = harga baru/harga pasar objek pembanding.
+
+Jika kendaraan sudah tidak diproduksi, harga jual saat ini di pasar dapat
+digunakan. Faktor yang negatif menurunkan nilai pembanding; faktor positif
+menaikkannya.
+
+E. Lokasi
+Kategori lokasi 1 memiliki tingkat harga tertinggi; kategori 4 terendah.
+Penyesuaian lokasi = 5% x (kategori lokasi pembanding - kategori lokasi objek).
+
+Tabel penyesuaian (baris = kategori objek; kolom = kategori pembanding):
+                 Pembanding 1   Pembanding 2   Pembanding 3   Pembanding 4
+Objek kategori 1       0%            5%            10%           15%
+Objek kategori 2      -5%            0%             5%           10%
+Objek kategori 3     -10%           -5%             0%            5%
+Objek kategori 4     -15%          -10%            -5%            0%
+
+F. Nilai pembanding setelah penyesuaian
+Total persentase = waktu + tahun pembuatan + tipe + merek + lokasi.
+Nilai pembanding disesuaikan = harga lelang x (1 + total persentase).
+
+Contoh: total penyesuaian +9% berarti harga lelang dikalikan 1,09; total
+-5% berarti dikalikan 0,95. Simpan rincian persentase tiap faktor agar dapat
+diaudit.
+
+6. PERHITUNGAN NILAI AKHIR
+
+Jumlahkan seluruh nilai pembanding setelah penyesuaian, lalu hitung rata-rata:
+- Jumlah nilai tersesuaikan = total seluruh nilai pembanding tersesuaikan.
+- Rata-rata = jumlah nilai tersesuaikan / jumlah data yang digunakan.
+
+Pilih faktor kondisi berdasarkan tujuan penjualan:
+
+Penjualan melalui lelang:
+- Kerusakan di atas 90%: faktor 0,5.
+- Kerusakan di atas 80% sampai dengan 90%: faktor 0,6.
+- Kerusakan sampai dengan 80%: faktor 0,7.
+- Jika tidak ada dokumen kepemilikan, gunakan faktor 0,5 (menggantikan
+  faktor 0,6 atau 0,7 bila kondisi kerusakan masuk kelompok tersebut).
+
+Penjualan tanpa melalui lelang:
+- Kerusakan di atas 90%: faktor 0,8.
+- Kerusakan di atas 80% sampai dengan 90%: faktor 0,9.
+- Kerusakan sampai dengan 80%: faktor 1,0.
+
+Rumus nilai akhir = rata-rata nilai pembanding tersesuaikan x faktor kondisi.
+Untuk penjualan lelang, hasil ini ditampilkan sebagai taksiran nilai limit
+lelang; untuk penjualan tanpa lelang, tampilkan sebagai nilai taksiran.
+
+Pembulatan nilai akhir dilakukan ke atas pada ribuan rupiah. Gunakan rumus:
+Nilai dibulatkan = ceil(nilai akhir / 1.000) x 1.000.
+Contoh: Rp2.660.482,86 menjadi Rp2.661.000,00. Jika nilai sudah tepat pada
+kelipatan Rp1.000, nilainya tetap. Tampilkan nilai sebelum dan sesudah
+pembulatan, dan jangan membulatkan nilai antara dalam proses perhitungan.
+
+7. ALUR APLIKASI YANG DISARANKAN
+
+1. Pengguna mengisi identitas, spesifikasi, lokasi, dokumen, kondisi, tujuan,
+   dan tanggal penilaian objek.
+2. Aplikasi menentukan kelas kendaraan dari jenis kendaraan dan kapasitas cc.
+3. Pengguna mengimpor/memasukkan data lelang dari basis data resmi, atau
+   memilih data pembanding yang tersedia.
+4. Aplikasi memvalidasi tanggal transaksi, tahun kendaraan, wilayah, merek,
+   tipe, dan tahap pencarian setiap pembanding.
+5. Aplikasi menjalankan urutan perluasan pencarian dan aturan batas 3-7 data.
+   Untuk penilaian spesifikasi tipe atau merek yang memerlukan pertimbangan,
+   sediakan isian/konfirmasi oleh pengguna yang berwenang.
+6. Aplikasi menghitung dan menampilkan setiap penyesuaian, total persentase,
+   nilai pembanding tersesuaikan, jumlah, rata-rata, faktor kondisi, dan hasil.
+7. Pengguna meninjau hasil dan menghasilkan kertas kerja untuk dicetak atau
+   disimpan.
+
+8. ISI MINIMUM KERTAS KERJA / LAPORAN
+
+- Nomor dan tanggal kertas kerja.
+- Identitas objek: nama, NUP, lokasi dan kategori lokasi, jenis kendaraan,
+  merek, tipe, dokumen kepemilikan, tahun pembuatan, kondisi, serta data fisik.
+- Setiap data lelang yang dipakai: identitas/kode, merek, tipe, harga, tahun
+  lelang, lokasi/kategori lokasi, dan tahun pembuatan.
+- Tahap dan wilayah pencarian data.
+- Penyesuaian merek, tipe, waktu, lokasi, dan tahun pembuatan untuk tiap data.
+- Total persentase dan nilai pembanding setelah penyesuaian.
+- Jumlah nilai, rata-rata, faktor kondisi, nilai akhir, serta pembulatan.
+- Nama dan tanda tangan Panitia Penaksir serta tanggal penentuan.
+
+Nilai taksiran pada kertas kerja berlaku selama 6 bulan sejak tanggal
+penentuan nilai taksiran.
+
+9. VALIDASI DAN HAL YANG PERLU DIPERHATIKAN
+
+- Tolak atau tandai harga, tahun, kategori lokasi, dan kapasitas cc yang
+  kosong/tidak valid.
+- Cegah transaksi pembanding yang lebih lama dari batas 3 tahun atau tahun
+  kendaraan di luar rentang yang diizinkan untuk tahap pencariannya.
+- Catat alasan pemilihan data, sumber, tahap pencarian, serta perubahan manual.
+- Pisahkan pengaturan kelas/rate, rute wilayah, kategori lokasi, dan aturan
+  pembulatan dari kode perhitungan agar mudah diperbarui.
+- Gunakan perhitungan mata uang dengan presisi desimal; jangan membulatkan
+  nilai antara sebelum rata-rata dan nilai akhir dihitung.
+- Jika total penyesuaian menghasilkan nilai pembanding nol/negatif, tampilkan
+  peringatan untuk pemeriksaan penaksir.
+- Kertas kerja dan aplikasi harus mengikuti peraturan resmi yang berlaku;
+  ringkasan ini berfungsi sebagai spesifikasi awal berdasarkan bagian PDF
+  yang diberikan.

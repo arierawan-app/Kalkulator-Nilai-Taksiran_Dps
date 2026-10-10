@@ -1,0 +1,428 @@
+[
+  {
+    "nama": "KPKNL Banda Aceh",
+    "provinsi": "Aceh",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Aceh"
+  },
+  {
+    "nama": "KPKNL Lhokseumawe",
+    "provinsi": "Aceh",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Aceh"
+  },
+  {
+    "nama": "KPKNL Medan",
+    "provinsi": "Sumatera Utara",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Sumatera Utara"
+  },
+  {
+    "nama": "KPKNL Pematang Siantar",
+    "provinsi": "Sumatera Utara",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Sumatera Utara"
+  },
+  {
+    "nama": "KPKNL Kisaran",
+    "provinsi": "Sumatera Utara",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Sumatera Utara"
+  },
+  {
+    "nama": "KPKNL Padang Sidempuan",
+    "provinsi": "Sumatera Utara",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Sumatera Utara"
+  },
+  {
+    "nama": "KPKNL Pekanbaru",
+    "provinsi": "Riau",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Riau, Sumatera Barat dan Kepulauan Riau"
+  },
+  {
+    "nama": "KPKNL Padang",
+    "provinsi": "Sumatera Barat",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Riau, Sumatera Barat dan Kepulauan Riau"
+  },
+  {
+    "nama": "KPKNL Bukittinggi",
+    "provinsi": "Sumatera Barat",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Riau, Sumatera Barat dan Kepulauan Riau"
+  },
+  {
+    "nama": "KPKNL Batam",
+    "provinsi": "Kepulauan Riau",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Riau, Sumatera Barat dan Kepulauan Riau"
+  },
+  {
+    "nama": "KPKNL Dumai",
+    "provinsi": "Riau",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Riau, Sumatera Barat dan Kepulauan Riau"
+  },
+  {
+    "nama": "KPKNL Palembang",
+    "provinsi": "Sumatera Selatan",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Sumatera Selatan, Jambi dan Bangka Belitung"
+  },
+  {
+    "nama": "KPKNL Jambi",
+    "provinsi": "Jambi",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Sumatera Selatan, Jambi dan Bangka Belitung"
+  },
+  {
+    "nama": "KPKNL Lahat",
+    "provinsi": "Sumatera Selatan",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Sumatera Selatan, Jambi dan Bangka Belitung"
+  },
+  {
+    "nama": "KPKNL Pangkal Pinang",
+    "provinsi": "Kepulauan Bangka Belitung",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Sumatera Selatan, Jambi dan Bangka Belitung"
+  },
+  {
+    "nama": "KPKNL Bandar Lampung",
+    "provinsi": "Lampung",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Lampung dan Bengkulu"
+  },
+  {
+    "nama": "KPKNL Bengkulu",
+    "provinsi": "Bengkulu",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Lampung dan Bengkulu"
+  },
+  {
+    "nama": "KPKNL Metro",
+    "provinsi": "Lampung",
+    "wilayah": "sumatera",
+    "kanwil": "Kanwil DJKN Lampung dan Bengkulu"
+  },
+  {
+    "nama": "KPKNL Serang",
+    "provinsi": "Banten",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Banten"
+  },
+  {
+    "nama": "KPKNL Tangerang I",
+    "provinsi": "Banten",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Banten"
+  },
+  {
+    "nama": "KPKNL Tangerang II",
+    "provinsi": "Banten",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Banten"
+  },
+  {
+    "nama": "KPKNL Jakarta I",
+    "provinsi": "DKI Jakarta",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN DKI Jakarta"
+  },
+  {
+    "nama": "KPKNL Jakarta II",
+    "provinsi": "DKI Jakarta",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN DKI Jakarta"
+  },
+  {
+    "nama": "KPKNL Jakarta III",
+    "provinsi": "DKI Jakarta",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN DKI Jakarta"
+  },
+  {
+    "nama": "KPKNL Jakarta IV",
+    "provinsi": "DKI Jakarta",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN DKI Jakarta"
+  },
+  {
+    "nama": "KPKNL Jakarta V",
+    "provinsi": "DKI Jakarta",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN DKI Jakarta"
+  },
+  {
+    "nama": "KPKNL Bandung",
+    "provinsi": "Jawa Barat",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Barat"
+  },
+  {
+    "nama": "KPKNL Bekasi",
+    "provinsi": "Jawa Barat",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Barat"
+  },
+  {
+    "nama": "KPKNL Bogor",
+    "provinsi": "Jawa Barat",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Barat"
+  },
+  {
+    "nama": "KPKNL Purwakarta",
+    "provinsi": "Jawa Barat",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Barat"
+  },
+  {
+    "nama": "KPKNL Tasikmalaya",
+    "provinsi": "Jawa Barat",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Barat"
+  },
+  {
+    "nama": "KPKNL Cirebon",
+    "provinsi": "Jawa Barat",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Barat"
+  },
+  {
+    "nama": "KPKNL Semarang",
+    "provinsi": "Jawa Tengah",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Tengah dan Daerah Istimewa Yogyakarta"
+  },
+  {
+    "nama": "KPKNL Surakarta",
+    "provinsi": "Jawa Tengah",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Tengah dan Daerah Istimewa Yogyakarta"
+  },
+  {
+    "nama": "KPKNL Pekalongan",
+    "provinsi": "Jawa Tengah",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Tengah dan Daerah Istimewa Yogyakarta"
+  },
+  {
+    "nama": "KPKNL Tegal",
+    "provinsi": "Jawa Tengah",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Tengah dan Daerah Istimewa Yogyakarta"
+  },
+  {
+    "nama": "KPKNL Yogyakarta",
+    "provinsi": "DI Yogyakarta",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Tengah dan Daerah Istimewa Yogyakarta"
+  },
+  {
+    "nama": "KPKNL Purwokerto",
+    "provinsi": "Jawa Tengah",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Tengah dan Daerah Istimewa Yogyakarta"
+  },
+  {
+    "nama": "KPKNL Surabaya",
+    "provinsi": "Jawa Timur",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Timur"
+  },
+  {
+    "nama": "KPKNL Sidoarjo",
+    "provinsi": "Jawa Timur",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Timur"
+  },
+  {
+    "nama": "KPKNL Malang",
+    "provinsi": "Jawa Timur",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Timur"
+  },
+  {
+    "nama": "KPKNL Jember",
+    "provinsi": "Jawa Timur",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Timur"
+  },
+  {
+    "nama": "KPKNL Madiun",
+    "provinsi": "Jawa Timur",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Timur"
+  },
+  {
+    "nama": "KPKNL Pamekasan",
+    "provinsi": "Jawa Timur",
+    "wilayah": "jawa",
+    "kanwil": "Kanwil DJKN Jawa Timur"
+  },
+  {
+    "nama": "KPKNL Pontianak",
+    "provinsi": "Kalimantan Barat",
+    "wilayah": "kalimantan_barat",
+    "kanwil": "Kanwil DJKN Kalimantan Barat"
+  },
+  {
+    "nama": "KPKNL Singkawang",
+    "provinsi": "Kalimantan Barat",
+    "wilayah": "kalimantan_barat",
+    "kanwil": "Kanwil DJKN Kalimantan Barat"
+  },
+  {
+    "nama": "KPKNL Banjarmasin",
+    "provinsi": "Kalimantan Selatan",
+    "wilayah": "kalimantan_utara_timur_tengah_selatan",
+    "kanwil": "Kanwil DJKN Kalimantan Selatan dan Tengah"
+  },
+  {
+    "nama": "KPKNL Palangkaraya",
+    "provinsi": "Kalimantan Tengah",
+    "wilayah": "kalimantan_utara_timur_tengah_selatan",
+    "kanwil": "Kanwil DJKN Kalimantan Selatan dan Tengah"
+  },
+  {
+    "nama": "KPKNL Pangkalan Bun",
+    "provinsi": "Kalimantan Tengah",
+    "wilayah": "kalimantan_utara_timur_tengah_selatan",
+    "kanwil": "Kanwil DJKN Kalimantan Selatan dan Tengah"
+  },
+  {
+    "nama": "KPKNL Samarinda",
+    "provinsi": "Kalimantan Timur",
+    "wilayah": "kalimantan_utara_timur_tengah_selatan",
+    "kanwil": "Kanwil DJKN Kalimantan Timur dan Utara"
+  },
+  {
+    "nama": "KPKNL Balikpapan",
+    "provinsi": "Kalimantan Timur",
+    "wilayah": "kalimantan_utara_timur_tengah_selatan",
+    "kanwil": "Kanwil DJKN Kalimantan Timur dan Utara"
+  },
+  {
+    "nama": "KPKNL Tarakan",
+    "provinsi": "Kalimantan Utara",
+    "wilayah": "kalimantan_utara_timur_tengah_selatan",
+    "kanwil": "Kanwil DJKN Kalimantan Timur dan Utara"
+  },
+  {
+    "nama": "KPKNL Bontang",
+    "provinsi": "Kalimantan Timur",
+    "wilayah": "kalimantan_utara_timur_tengah_selatan",
+    "kanwil": "Kanwil DJKN Kalimantan Timur dan Utara"
+  },
+  {
+    "nama": "KPKNL Denpasar",
+    "provinsi": "Bali",
+    "wilayah": "bali_nusa_tenggara",
+    "kanwil": "Kanwil DJKN Bali dan Nusa Tenggara"
+  },
+  {
+    "nama": "KPKNL Singaraja",
+    "provinsi": "Bali",
+    "wilayah": "bali_nusa_tenggara",
+    "kanwil": "Kanwil DJKN Bali dan Nusa Tenggara"
+  },
+  {
+    "nama": "KPKNL Bima",
+    "provinsi": "Nusa Tenggara Barat",
+    "wilayah": "bali_nusa_tenggara",
+    "kanwil": "Kanwil DJKN Bali dan Nusa Tenggara"
+  },
+  {
+    "nama": "KPKNL Mataram",
+    "provinsi": "Nusa Tenggara Barat",
+    "wilayah": "bali_nusa_tenggara",
+    "kanwil": "Kanwil DJKN Bali dan Nusa Tenggara"
+  },
+  {
+    "nama": "KPKNL Kupang",
+    "provinsi": "Nusa Tenggara Timur",
+    "wilayah": "bali_nusa_tenggara",
+    "kanwil": "Kanwil DJKN Bali dan Nusa Tenggara"
+  },
+  {
+    "nama": "KPKNL Makassar",
+    "provinsi": "Sulawesi Selatan",
+    "wilayah": "sulawesi_maluku_papua",
+    "kanwil": "Kanwil DJKN Sulawesi Selatan, Tenggara, dan Barat"
+  },
+  {
+    "nama": "KPKNL Parepare",
+    "provinsi": "Sulawesi Selatan",
+    "wilayah": "sulawesi_maluku_papua",
+    "kanwil": "Kanwil DJKN Sulawesi Selatan, Tenggara, dan Barat"
+  },
+  {
+    "nama": "KPKNL Palopo",
+    "provinsi": "Sulawesi Selatan",
+    "wilayah": "sulawesi_maluku_papua",
+    "kanwil": "Kanwil DJKN Sulawesi Selatan, Tenggara, dan Barat"
+  },
+  {
+    "nama": "KPKNL Kendari",
+    "provinsi": "Sulawesi Tenggara",
+    "wilayah": "sulawesi_maluku_papua",
+    "kanwil": "Kanwil DJKN Sulawesi Selatan, Tenggara, dan Barat"
+  },
+  {
+    "nama": "KPKNL Mamuju",
+    "provinsi": "Sulawesi Barat",
+    "wilayah": "sulawesi_maluku_papua",
+    "kanwil": "Kanwil DJKN Sulawesi Selatan, Tenggara, dan Barat"
+  },
+  {
+    "nama": "KPKNL Manado",
+    "provinsi": "Sulawesi Utara",
+    "wilayah": "sulawesi_maluku_papua",
+    "kanwil": "Kanwil DJKN Sulawesi Utara, Tengah, Gorontalo, dan Maluku Utara"
+  },
+  {
+    "nama": "KPKNL Gorontalo",
+    "provinsi": "Gorontalo",
+    "wilayah": "sulawesi_maluku_papua",
+    "kanwil": "Kanwil DJKN Sulawesi Utara, Tengah, Gorontalo, dan Maluku Utara"
+  },
+  {
+    "nama": "KPKNL Palu",
+    "provinsi": "Sulawesi Tengah",
+    "wilayah": "sulawesi_maluku_papua",
+    "kanwil": "Kanwil DJKN Sulawesi Utara, Tengah, Gorontalo, dan Maluku Utara"
+  },
+  {
+    "nama": "KPKNL Ternate",
+    "provinsi": "Maluku Utara",
+    "wilayah": "sulawesi_maluku_papua",
+    "kanwil": "Kanwil DJKN Sulawesi Utara, Tengah, Gorontalo, dan Maluku Utara"
+  },
+  {
+    "nama": "KPKNL Jayapura",
+    "provinsi": "Papua",
+    "wilayah": "sulawesi_maluku_papua",
+    "kanwil": "Kanwil DJKN Papua, Papua Barat, dan Maluku"
+  },
+  {
+    "nama": "KPKNL Sorong",
+    "provinsi": "Papua Barat Daya",
+    "wilayah": "sulawesi_maluku_papua",
+    "kanwil": "Kanwil DJKN Papua, Papua Barat, dan Maluku"
+  },
+  {
+    "nama": "KPKNL Ambon",
+    "provinsi": "Maluku",
+    "wilayah": "sulawesi_maluku_papua",
+    "kanwil": "Kanwil DJKN Papua, Papua Barat, dan Maluku"
+  },
+  {
+    "nama": "KPKNL Biak",
+    "provinsi": "Papua",
+    "wilayah": "sulawesi_maluku_papua",
+    "kanwil": "Kanwil DJKN Papua, Papua Barat, dan Maluku"
+  }
+]
