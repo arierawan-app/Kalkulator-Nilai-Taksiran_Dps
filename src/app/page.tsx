@@ -43,26 +43,7 @@ export default async function Beranda() {
                 Masuk dengan Google
               </button>
             </form>
-            <ul className="mt-6 space-y-2 text-xs text-abu leading-relaxed list-disc pl-4">
-              <li>
-                Draf disimpan otomatis pada folder &quot;Kalkulator Nilai
-                Taksiran&quot; di Google Drive Anda; tidak ada data yang
-                disimpan di server aplikasi.
-              </li>
-              <li>
-                PDF kertas kerja dapat diunduh dan/atau disimpan ke Drive.
-              </li>
-              <li>
-                Akses aplikasi hanya ke file yang dibuatnya (scope drive.file).
-              </li>
-            </ul>
           </div>
-          <p className="text-xs text-abu mt-4 leading-relaxed">
-            Perhitungan mengikuti Tata Cara Penentuan Nilai Taksiran BMN:
-            metode perbandingan data harga penjualan lelang, klasifikasi cc,
-            faktor kondisi sesuai tujuan penjualan, dan perluasan wilayah
-            pencarian data.
-          </p>
         </div>
       </section>
     </main>
