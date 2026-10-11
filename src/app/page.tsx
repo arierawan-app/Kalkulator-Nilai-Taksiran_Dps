@@ -27,9 +27,9 @@ export default async function Beranda() {
             alt="Sketsa teknis mobil dan komponen kendaraan"
             width={1800}
             height={1355}
-            sizes="(max-width: 768px) 100vw, 512px"
+            sizes="(max-width: 768px) calc(100vw - 4rem), 768px"
             loading="eager"
-            className="mx-auto block h-auto w-full max-w-lg opacity-[0.62]"
+            className="mx-auto block h-auto w-full max-w-full opacity-[0.62]"
           />
         </div>
       </section>
