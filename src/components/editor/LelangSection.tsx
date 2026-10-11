@@ -5,6 +5,7 @@ import { Field, Catatan, Modal, PanduanButton, InputRupiah } from "./fields";
 import { BATAS, KUTIPAN, TAHAPAN_PENCARIAN, WILAYAH } from "@/lib/ketentuan";
 import type { Dokumen, LelangRow } from "@/lib/types";
 import { cekTahunLelang, infoWilayah, kotaTanpaPerluasan } from "@/lib/validasi";
+import { dalamRentangTahunPembuatan } from "@/lib/calc";
 import kpknlData from "@/data/kpknl.json";
 import type { Kpknl } from "@/lib/types";
 
@@ -52,11 +53,19 @@ export function LelangSection({
     nomor: number;
     tahun: number;
   } | null>(null);
+  const [popupTahun, setPopupTahun] = useState<{
+    nomor: number;
+    tahun: number;
+  } | null>(null);
 
   const info = infoWilayah(dok.objek.provinsi);
   const tanpaPerluasan =
     kotaTanpaPerluasan(dok.objek.lokasiObjek) ||
     kotaTanpaPerluasan(dok.objek.kpknl.replace("KPKNL ", ""));
+  const batasTahunBawah =
+    dok.objek.tahunPembuatan - BATAS.rentangTahunPembuatan;
+  const batasTahunAtas =
+    dok.objek.tahunPembuatan + BATAS.rentangTahunPembuatan;
 
   const ubahWaktu = (row: LelangRow, nomor: number, teks: string) => {
     const nilai = Number(teks) || 0;
@@ -69,6 +78,21 @@ export function LelangSection({
       setPopupWaktu({ nomor, tahun: nilai });
     } else {
       setPopupWaktu((sebelum) => (sebelum?.nomor === nomor ? null : sebelum));
+    }
+  };
+
+  const ubahTahunPembuatan = (row: LelangRow, nomor: number, teks: string) => {
+    const nilai = Number(teks) || 0;
+    onChangeRow(row.id, { tahunPembuatan: nilai });
+    const tahunLengkap = /^\d{4,}$/.test(teks);
+    const ditolak =
+      tahunLengkap &&
+      Boolean(dok.objek.tahunPembuatan) &&
+      !dalamRentangTahunPembuatan(dok.objek.tahunPembuatan, nilai);
+    if (ditolak) {
+      setPopupTahun({ nomor, tahun: nilai });
+    } else {
+      setPopupTahun((sebelum) => (sebelum?.nomor === nomor ? null : sebelum));
     }
   };
 
@@ -162,6 +186,13 @@ export function LelangSection({
             row.waktuLelang >= 1000
               ? cekTahunLelang(dok.tahunPenilaian, row.waktuLelang)
               : null;
+          const temuanTahun =
+            row.tahunPembuatan >= 1000 &&
+            Boolean(dok.objek.tahunPembuatan) &&
+            !dalamRentangTahunPembuatan(
+              dok.objek.tahunPembuatan,
+              row.tahunPembuatan
+            );
           const saran =
             row.namaKPKNL && dok.objek.provinsi
               ? saranWilayah(row.namaKPKNL, dok.objek.provinsi)
@@ -276,18 +307,27 @@ export function LelangSection({
                 </Field>
                 <Field
                   label="Tahun pembuatan"
-                  hint={`Rentang yang diizinkan: ${dok.objek.tahunPembuatan - BATAS.rentangTahunPembuatan} - ${dok.objek.tahunPembuatan + BATAS.rentangTahunPembuatan}`}
+                  panduan={
+                    <PanduanButton
+                      judul="Rentang tahun pembuatan data pembanding"
+                      isi={KUTIPAN.tahunPembuatan}
+                    />
+                  }
+                  hint={
+                    temuanTahun
+                      ? `Tahun pembuatan ditolak: di luar rentang ${batasTahunBawah} - ${batasTahunAtas}.`
+                      : `Rentang yang diizinkan: ${batasTahunBawah} - ${batasTahunAtas}.`
+                  }
                 >
                   <input
                     type="number"
                     className="field angka"
+                    aria-invalid={temuanTahun ? "true" : undefined}
                     value={row.tahunPembuatan || ""}
                     min={1900}
                     max={2100}
                     onChange={(e) =>
-                      onChangeRow(row.id, {
-                        tahunPembuatan: Number(e.target.value) || 0,
-                      })
+                      ubahTahunPembuatan(row, nomor, e.target.value)
                     }
                   />
                 </Field>
@@ -353,6 +393,22 @@ export function LelangSection({
         <p className="mt-3">
           Perbaiki tahun lelang atau ganti data pembanding. Kertas kerja tidak
           dapat dicetak selama masih ada data yang ditolak.
+        </p>
+      </Modal>
+
+      <Modal
+        buka={popupTahun !== null}
+        tutup={() => setPopupTahun(null)}
+        judul="Tahun pembuatan data pembanding ditolak"
+      >
+        <p>
+          Data {popupTahun?.nomor} dengan tahun pembuatan {popupTahun?.tahun}{" "}
+          tidak dapat digunakan.
+        </p>
+        <p className="mt-3 text-abu">{KUTIPAN.tahunPembuatan}</p>
+        <p className="mt-3">
+          Perbaiki tahun pembuatan atau ganti data pembanding. Kertas kerja
+          tidak dapat dicetak selama masih ada data yang ditolak.
         </p>
       </Modal>
     </section>
