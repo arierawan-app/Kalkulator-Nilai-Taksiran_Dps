@@ -7,11 +7,16 @@ Tata Cara Penentuan Nilai Taksiran (dokumen referensi tersedia di folder ini:
 
 ## Fitur
 
-- Login Google (OAuth). Draf dan hasil PDF tersimpan pada folder
-  `Kalkulator Nilai Taksiran` di Google Drive pengguna (scope `drive.file`);
-  tidak ada data yang disimpan di server aplikasi.
-- Penyimpanan otomatis (autosave) dengan indikator status, daftar dokumen
-  tersimpan (buka/hapus), serta cadangan draf di perangkat.
+- Login Google (OAuth) untuk verifikasi akses. Seluruh data kertas kerja
+  disimpan di perangkat pengguna sendiri (local storage browser + berkas
+  pilihan pengguna); tidak ada data yang disimpan di server aplikasi.
+- Penyimpanan berkas ke perangkat dengan pop-up pemilihan lokasi
+  (File System Access API pada Chrome/Edge). Pada browser yang belum
+  mendukungnya (mis. Safari/Firefox), berkas otomatis diunduh ke folder
+  unduhan.
+- Draf tersimpan otomatis di perangkat dengan indikator status. Data isian
+  dapat dibuka kembali dari berkas `.json`, dan PDF hasil penilaian dapat
+  dibuka melalui penampil PDF di dalam aplikasi.
 - Form lengkap: identitas satker + logo, Panitia Penaksir, objek dan fisik
   kendaraan (termasuk cc untuk klasifikasi low/middle/high-end), data hasil
   lelang, penyesuaian manual dengan nilai ketentuan sebagai panduan, dan
@@ -24,43 +29,39 @@ Tata Cara Penentuan Nilai Taksiran (dokumen referensi tersedia di folder ini:
   khusus Bali dan Nusa Tenggara (satu provinsi -> Surabaya/Sidoarjo
   -> seluruh Indonesia) dan pengecualian Kota Batam/Sabang.
 - Output PDF dua lembar menyerupai format template resmi, pembulatan ke atas
-  pada ribuan rupiah, dapat diunduh dan/atau disimpan ke Drive.
+  pada ribuan rupiah, dapat disimpan ke perangkat dan dibuka kembali melalui
+  penampil PDF.
 
 ## Struktur
 
 ```
-src/app                 halaman (landing, editor) dan API routes
-src/components/editor   komponen form, panduan, rekap
-src/components/cetak    template kertas kerja + util PDF
-src/lib                 fungsi perhitungan, validasi, ketentuan, auth, Drive
-src/data/kpknl.json     daftar KPKNL per provinsi (sumber publik DJKN)
-tests                   unit test perhitungan & validasi (vitest)
-legacy/index.html       prototipe lama (arsip)
+src/app                  halaman (landing, editor) dan API route autentikasi
+src/components/editor    komponen form, panduan, rekap
+src/components/cetak     template kertas kerja + util PDF
+src/lib                  fungsi perhitungan, validasi, ketentuan, auth,
+                         penyimpanan lokal
+src/data/kpknl.json      daftar KPKNL per provinsi (sumber publik DJKN)
+tests                    unit test perhitungan & validasi (vitest)
+legacy/index.html        prototipe lama (arsip)
 ```
 
 ## Prasyarat
 
 - Node.js 20+ (disarankan 22)
-- Akun Google dengan akses Google Cloud Console (gratis)
+- Akun Google Cloud untuk OAuth login (gratis). Google Drive API tidak
+  diperlukan.
 
 ## 1. Menyiapkan Google OAuth (sekali saja)
 
 1. Buka https://console.cloud.google.com dan buat project baru
    (mis. `kalkulator-nilai-taksiran`).
-2. Menu **APIs & Services > Library**, cari **Google Drive API**, klik
-   **Enable**.
-3. Menu **APIs & Services > OAuth consent screen**:
+2. Menu **APIs & Services > OAuth consent screen**:
    - Pilih **External**, isi nama aplikasi, email support, dan email developer.
    - Pada bagian **Audience**, tambahkan akun Google pengguna di **Test users**
      (mis. akun DJPb Anda). Selama status masih **Testing**, hanya akun uji
-     yang dapat login. Scope `drive.file` termasuk non-sensitif sehingga tidak
-     memerlukan verifikasi Google untuk produksi.
-   - **Penting**: selama status masih Testing, refresh token Google
-     kedaluwarsa setelah 7 hari sehingga autosave Drive akan meminta login
-     ulang setiap minggu. Setelah pengujian selesai, klik **Publish app**
-     pada OAuth consent screen agar sesi berjalan berkelanjutan (scope
-     `drive.file` non-sensitif, tidak diperlukan verifikasi Google).
-4. Menu **APIs & Services > Credentials > Create credentials > OAuth client ID**:
+     yang dapat login. Aplikasi hanya memakai scope dasar email/profil sehingga
+     tidak memerlukan verifikasi Google.
+3. Menu **APIs & Services > Credentials > Create credentials > OAuth client ID**:
    - Application type: **Web application**.
    - **Authorized JavaScript origins**:
      - `http://localhost:3000`
@@ -68,7 +69,7 @@ legacy/index.html       prototipe lama (arsip)
    - **Authorized redirect URIs**:
      - `http://localhost:3000/api/auth/callback/google`
      - `https://<domain-vercel-anda>/api/auth/callback/google`
-5. Simpan **Client ID** dan **Client Secret**.
+4. Simpan **Client ID** dan **Client Secret**.
 
 ## 2. Menjalankan lokal
 
@@ -98,7 +99,7 @@ npm run build      # build produksi
    - `AUTH_GOOGLE_SECRET`
 3. Deploy, lalu salin domain `*.vercel.app` yang diperoleh dan tambahkan
    `https://<domain>/api/auth/callback/google` pada Authorized redirect URIs
-   di Google Cloud Console (langkah 1.4). Deploy ulang bila perlu.
+   di Google Cloud Console (langkah 1.3). Deploy ulang bila perlu.
 4. Buka domain Vercel, login dengan akun Google yang terdaftar sebagai test
    user, lalu mulai menyusun kertas kerja.
 
@@ -111,19 +112,19 @@ npm run build      # build produksi
   masukkan alamat Gmail yang persis sama dengan akun yang dipakai login
   (tunggu 1-5 menit, lalu coba lagi / gunakan jendela incognito). Solusi
   permanen: klik **Publish app** pada OAuth consent screen agar semua akun
-  dapat login; scope `drive.file` non-sensitif sehingga tidak memerlukan
-  verifikasi Google.
+  dapat login.
 - **redirect_uri_mismatch**: URI di Google Cloud Console harus sama persis
   dengan yang dipakai (skema http/https, port, dan tanpa garis miring di
   akhir), termasuk `http://localhost:3000/api/auth/callback/google` dan
   `https://<domain-vercel>/api/auth/callback/google`.
-- **Sesi berakhir setiap 7 hari saat masih Testing**: refresh token pada
-  status Testing memang kedaluwarsa 7 hari. Publish app untuk mengatasinya.
-- **Draf tidak tersimpan ke Drive / pita peringatan "Koneksi Google Drive
-  terputus"**: klik **Coba sambungkan ulang** pada aplikasi; bila masih
-  terputus klik **Masuk ulang dengan Google**. Draf tetap aman di perangkat
-  dan akan tersinkron setelah tersambung. Jika sering terjadi saat masih
-  Testing, publish app (refresh token Testing kedaluwarsa 7 hari).
+- **Data tidak tersimpan ke berkas**: pastikan menekan tombol **Simpan**
+  (data isian) atau **Simpan PDF** lalu pilih lokasi pada pop-up. Draf tetap
+  tersimpan otomatis di browser perangkat tersebut sehingga aman bila aplikasi
+  tertutup, namun draf tidak berpindah ke perangkat/browser lain.
+- **Pop-up pemilihan lokasi tidak muncul**: browser belum mendukung File
+  System Access API (mis. Safari/Firefox). Berkas akan otomatis diunduh ke
+  folder unduhan; gunakan **Buka dokumen -> Buka data isian (.json)** untuk
+  membukanya kembali.
 
 ## Catatan kepatuhan
 

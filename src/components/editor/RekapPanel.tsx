@@ -26,15 +26,15 @@ export function RekapPanel({
   dok,
   temuan,
   onPreview,
-  onUnduh,
-  onSimpanDrive,
+  onSimpanPdf,
+  onBukaPdf,
   sibuk,
 }: {
   dok: Dokumen;
   temuan: TemuanValidasi[];
   onPreview: () => void;
-  onUnduh: () => void;
-  onSimpanDrive: () => void;
+  onSimpanPdf: () => void;
+  onBukaPdf: () => void;
   sibuk: boolean;
 }) {
   const punyaDokumen = dok.objek.dokumen !== "Tidak ada";
@@ -115,18 +115,18 @@ export function RekapPanel({
         <button
           type="button"
           className="tombol tombol-garis w-full justify-center"
-          onClick={onUnduh}
+          onClick={onSimpanPdf}
           disabled={!bolehCetak || sibuk}
         >
-          Unduh PDF
+          Simpan PDF
         </button>
         <button
           type="button"
           className="tombol tombol-garis w-full justify-center"
-          onClick={onSimpanDrive}
-          disabled={!bolehCetak || sibuk}
+          onClick={onBukaPdf}
+          disabled={sibuk}
         >
-          Simpan PDF ke Drive
+          Buka PDF
         </button>
       </div>
       <p className="text-[10px] text-abu mt-3 leading-relaxed">

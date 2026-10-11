@@ -83,7 +83,6 @@ export type MerekRow = {
 };
 
 export type Dokumen = {
-  fileId?: string;
   namaFile: string;
   satker: Satker;
   panitia: Panitia;

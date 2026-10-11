@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { signIn, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { SatkerSection } from "./SatkerSection";
 import { PanitiaSection } from "./PanitiaSection";
 import { ObjekSection } from "./ObjekSection";
@@ -11,7 +11,13 @@ import { MerekSection } from "./MerekSection";
 import { RekapPanel } from "./RekapPanel";
 import { Modal } from "./fields";
 import { KertasKerja } from "@/components/cetak/KertasKerja";
-import { buatBlobPdf, unduhBlob } from "@/components/cetak/pdf";
+import { buatBlobPdf } from "@/components/cetak/pdf";
+import {
+  BERKAS_JSON,
+  BERKAS_PDF,
+  bukaBerkasLokal,
+  simpanBlobLokal,
+} from "@/lib/berkas-lokal";
 import {
   barisLelangKosong,
   dokumenBaru,
@@ -40,35 +46,25 @@ type StatusSimpan = {
   teks: string;
 };
 
-type BerkasDrive = {
-  id: string;
-  name?: string;
-  modifiedTime?: string;
-};
-
 export function EditorApp({
   userEmail,
   userName,
-  sessionError,
 }: {
   userEmail: string;
   userName: string;
-  sessionError?: "RefreshTokenError";
 }) {
   const [dokumen, setDokumen] = useState<Dokumen | null>(null);
   const [status, setStatus] = useState<StatusSimpan>({
     mode: "idle",
-    teks: "Draf tersimpan di perangkat",
+    teks: "Draf tersimpan otomatis di perangkat",
   });
-  const [butuhLoginUlang, setButuhLoginUlang] = useState(
-    sessionError === "RefreshTokenError"
-  );
   const [sibuk, setSibuk] = useState(false);
   const [bukaPreview, setBukaPreview] = useState(false);
   const [bukaDokumen, setBukaDokumen] = useState(false);
+  const [pdfLihat, setPdfLihat] = useState<{ url: string; nama: string } | null>(
+    null
+  );
 
-  const kotor = useRef(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lembar = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -93,57 +89,7 @@ export function EditorApp({
     }
   }, [dokumen]);
 
-  const simpanKeDrive = useCallback(async (dok: Dokumen) => {
-    setStatus({ mode: "saving", teks: "Menyimpan ke Drive..." });
-    try {
-      const res = await fetch("/api/drive/documents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileId: dok.fileId,
-          namaFile: namaFileDokumen(dok),
-          dokumen: { ...dok, updatedAt: new Date().toISOString() },
-        }),
-      });
-      if (res.status === 401) {
-        setButuhLoginUlang(true);
-        setStatus({ mode: "error", teks: "Sesi Google berakhir" });
-        return;
-      }
-      if (!res.ok) throw new Error();
-      const data = (await res.json()) as { fileId?: string };
-      if (data.fileId && data.fileId !== dok.fileId) {
-        setDokumen((d) => (d ? { ...d, fileId: data.fileId } : d));
-      }
-      const jam = new Date().toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      setButuhLoginUlang(false);
-      setStatus({ mode: "saved", teks: `Tersimpan di Drive ${jam}` });
-    } catch {
-      setStatus({
-        mode: "error",
-        teks: "Gagal menyimpan ke Drive - draf aman di perangkat",
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!dokumen || !kotor.current) return;
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      if (!kotor.current) return;
-      kotor.current = false;
-      void simpanKeDrive(dokumen);
-    }, 2500);
-    return () => {
-      if (timer.current) clearTimeout(timer.current);
-    };
-  }, [dokumen, simpanKeDrive]);
-
   const ubah = useCallback((fn: (d: Dokumen) => Dokumen) => {
-    kotor.current = true;
     setDokumen((d) => (d ? fn(d) : d));
   }, []);
 
@@ -239,30 +185,84 @@ export function EditorApp({
   );
 
   const dokumenBaruHandler = () => {
-    if (!confirm("Mulai dokumen baru? Draf saat ini tetap tersimpan di Drive dan perangkat.")) return;
-    kotor.current = false;
+    if (
+      !confirm(
+        "Mulai dokumen baru? Draf saat ini akan diganti. Simpan ke berkas terlebih dahulu bila masih diperlukan."
+      )
+    )
+      return;
     setDokumen(dokumenBaru());
-    setStatus({ mode: "idle", teks: "Dokumen baru" });
+    setStatus({ mode: "idle", teks: "Dokumen baru • draf tersimpan otomatis di perangkat" });
   };
 
-  const bukaDariDrive = async (fileId: string) => {
+  const simpanKeBerkas = async () => {
+    if (!dokumen) return;
+    setSibuk(true);
+    setStatus({ mode: "saving", teks: "Menyimpan ke perangkat..." });
     try {
-      const res = await fetch(`/api/drive/documents/${fileId}`);
-      if (res.status === 401) {
-        setButuhLoginUlang(true);
+      const dokTerbaru: Dokumen = {
+        ...dokumen,
+        updatedAt: new Date().toISOString(),
+      };
+      const blob = new Blob([JSON.stringify(dokTerbaru, null, 2)], {
+        type: "application/json",
+      });
+      const hasil = await simpanBlobLokal(blob, namaFileDokumen(dokTerbaru), BERKAS_JSON);
+      if (!hasil) {
+        setStatus({ mode: "idle", teks: "Penyimpanan dibatalkan" });
         return;
       }
-      if (!res.ok) throw new Error();
-      const data = (await res.json()) as { dokumen: unknown };
-      const dok = normalisasiDokumen(data.dokumen);
-      dok.fileId = fileId;
-      kotor.current = false;
-      setButuhLoginUlang(false);
-      setDokumen(dok);
-      setBukaDokumen(false);
-      setStatus({ mode: "saved", teks: "Dokumen dibuka dari Drive" });
+      setDokumen(dokTerbaru);
+      if (hasil.metode === "unduhan") {
+        alert(
+          `Browser ini belum mendukung pemilihan lokasi penyimpanan. Berkas diunduh sebagai "${hasil.nama}".`
+        );
+      }
+      setStatus({
+        mode: "saved",
+        teks:
+          hasil.metode === "pilih-lokasi"
+            ? `Tersimpan: ${hasil.nama}`
+            : `Terunduh: ${hasil.nama}`,
+      });
     } catch {
-      alert("Gagal membuka dokumen dari Drive.");
+      setStatus({ mode: "error", teks: "Gagal menyimpan - draf aman di perangkat" });
+    } finally {
+      setSibuk(false);
+    }
+  };
+
+  const bukaDokumenJson = async () => {
+    try {
+      const file = await bukaBerkasLokal(BERKAS_JSON);
+      if (!file) return;
+      const isi = JSON.parse(await file.text());
+      setDokumen(normalisasiDokumen(isi));
+      setBukaDokumen(false);
+      setStatus({ mode: "saved", teks: `Dibuka: ${file.name}` });
+    } catch {
+      alert("Gagal membuka dokumen. Pilih berkas JSON yang disimpan dari aplikasi ini.");
+    }
+  };
+
+  const tutupPdf = useCallback(() => {
+    setPdfLihat((lama) => {
+      if (lama) URL.revokeObjectURL(lama.url);
+      return null;
+    });
+  }, []);
+
+  const bukaPdf = async () => {
+    try {
+      const file = await bukaBerkasLokal(BERKAS_PDF);
+      if (!file) return;
+      setPdfLihat((lama) => {
+        if (lama) URL.revokeObjectURL(lama.url);
+        return { url: URL.createObjectURL(file), nama: file.name };
+      });
+      setBukaDokumen(false);
+    } catch {
+      alert("Gagal membuka berkas PDF.");
     }
   };
 
@@ -271,62 +271,30 @@ export function EditorApp({
     return buatBlobPdf(lembar.current, namaFilePdf(dokumen));
   };
 
-  const unduhPdf = async () => {
-    if (!dokumen) return;
-    setSibuk(true);
-    try {
-      const blob = await pastikanBlob();
-      if (blob) unduhBlob(blob, namaFilePdf(dokumen));
-    } catch {
-      alert("Gagal membuat PDF. Coba lagi.");
-    } finally {
-      setSibuk(false);
-    }
-  };
-
-  const simpanPdfKeDrive = async () => {
+  const simpanPdf = async () => {
     if (!dokumen) return;
     setSibuk(true);
     try {
       const blob = await pastikanBlob();
       if (!blob) return;
-      const nama = namaFilePdf(dokumen);
-      const form = new FormData();
-      form.append("file", new File([blob], nama, { type: "application/pdf" }));
-      form.append("nama", nama);
-      const res = await fetch("/api/drive/pdf", { method: "POST", body: form });
-      if (res.status === 401) {
-        setButuhLoginUlang(true);
-        return;
+      const hasil = await simpanBlobLokal(blob, namaFilePdf(dokumen), BERKAS_PDF);
+      if (!hasil) return;
+      if (hasil.metode === "unduhan") {
+        alert(
+          `Browser ini belum mendukung pemilihan lokasi penyimpanan. PDF diunduh sebagai "${hasil.nama}".`
+        );
       }
-      if (!res.ok) throw new Error();
-      alert(
-        "PDF tersimpan pada folder \"Kalkulator Nilai Taksiran\" di Google Drive Anda."
-      );
+      setStatus({
+        mode: "saved",
+        teks:
+          hasil.metode === "pilih-lokasi"
+            ? `PDF tersimpan: ${hasil.nama}`
+            : `PDF terunduh: ${hasil.nama}`,
+      });
     } catch {
-      alert("Gagal menyimpan PDF ke Drive.");
+      alert("Gagal membuat atau menyimpan PDF. Coba lagi.");
     } finally {
       setSibuk(false);
-    }
-  };
-
-  const cobaLagi = async () => {
-    setStatus({ mode: "saving", teks: "Menyambungkan ulang..." });
-    try {
-      const res = await fetch("/api/drive/documents");
-      if (!res.ok) {
-        setButuhLoginUlang(true);
-        setStatus({
-          mode: "error",
-          teks: "Masih terputus - silakan masuk ulang dengan Google",
-        });
-        return;
-      }
-      setButuhLoginUlang(false);
-      setStatus({ mode: "saved", teks: "Terhubung kembali ke Google Drive" });
-      if (dokumen) void simpanKeDrive(dokumen);
-    } catch {
-      setStatus({ mode: "error", teks: "Tidak dapat menghubungi server" });
     }
   };
 
@@ -373,12 +341,10 @@ export function EditorApp({
           <button
             type="button"
             className="tombol tombol-garis text-xs"
-            onClick={() => {
-              kotor.current = false;
-              void simpanKeDrive(dokumen);
-            }}
+            onClick={() => void simpanKeBerkas()}
+            disabled={sibuk}
           >
-            Simpan ke Drive
+            Simpan
           </button>
           <button
             type="button"
@@ -389,30 +355,6 @@ export function EditorApp({
           </button>
         </div>
       </header>
-
-      {butuhLoginUlang ? (
-        <div className="border-b border-stempel/30 bg-stempel-soft px-4 py-2 text-xs text-stempel">
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 lg:px-6">
-            <span className="mr-auto py-1">
-              Koneksi Google Drive terputus. Draf aman di perangkat ini.
-            </span>
-            <button
-              type="button"
-              className="tombol tombol-garis px-2.5 py-1 text-xs"
-              onClick={() => void cobaLagi()}
-            >
-              Coba sambungkan ulang
-            </button>
-            <button
-              type="button"
-              className="tombol tombol-stempel px-2.5 py-1 text-xs"
-              onClick={() => void signIn("google", { redirectTo: "/editor" })}
-            >
-              Masuk ulang dengan Google
-            </button>
-          </div>
-        </div>
-      ) : null}
 
       <main className="mx-auto grid max-w-7xl gap-8 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_330px] lg:px-8">
         <div className="space-y-8">
@@ -450,18 +392,19 @@ export function EditorApp({
             temuan={temuan}
             sibuk={sibuk}
             onPreview={() => setBukaPreview(true)}
-            onUnduh={() => void unduhPdf()}
-            onSimpanDrive={() => void simpanPdfKeDrive()}
+            onSimpanPdf={() => void simpanPdf()}
+            onBukaPdf={() => void bukaPdf()}
           />
         </div>
       </main>
 
       <footer className="mx-auto max-w-7xl px-4 pb-10 lg:px-8">
         <p className="text-[11px] text-abu leading-relaxed border-t border-garis pt-4">
-          Data disimpan pada folder &quot;Kalkulator Nilai Taksiran&quot; di
-          Google Drive akun {userEmail}. Nilai taksiran berlaku 6 bulan sejak
-          tanggal penentuan. Pastikan seluruh isian sesuai ketentuan Tata Cara
-          Penentuan Nilai Taksiran BMN sebelum ditandatangani.
+          Data kertas kerja disimpan di perangkat Anda sendiri (komputer/laptop
+          yang digunakan) dan tidak dikirim ke server. Nilai taksiran berlaku 6
+          bulan sejak tanggal penentuan. Pastikan seluruh isian sesuai
+          ketentuan Tata Cara Penentuan Nilai Taksiran BMN sebelum
+          ditandatangani.
         </p>
       </footer>
 
@@ -501,130 +444,61 @@ export function EditorApp({
         <div className="mt-3 flex flex-wrap justify-end gap-2">
           <button
             type="button"
-            className="tombol tombol-garis"
-            onClick={() => void unduhPdf()}
-            disabled={sibuk}
-          >
-            Unduh PDF
-          </button>
-          <button
-            type="button"
             className="tombol tombol-utama"
-            onClick={() => void simpanPdfKeDrive()}
+            onClick={() => void simpanPdf()}
             disabled={sibuk}
           >
-            Simpan PDF ke Drive
+            Simpan PDF
           </button>
         </div>
       </Modal>
 
-      <ModalDokumen
+      <Modal
         buka={bukaDokumen}
         tutup={() => setBukaDokumen(false)}
-        fileIdAktif={dokumen.fileId}
-        onBuka={bukaDariDrive}
-        onSesiHilang={() => setButuhLoginUlang(true)}
-      />
-    </div>
-  );
-}
-
-function ModalDokumen({
-  buka,
-  tutup,
-  fileIdAktif,
-  onBuka,
-  onSesiHilang,
-}: {
-  buka: boolean;
-  tutup: () => void;
-  fileIdAktif?: string;
-  onBuka: (fileId: string) => void;
-  onSesiHilang: () => void;
-}) {
-  const [daftar, setDaftar] = useState<BerkasDrive[] | null>(null);
-  const [galat, setGalat] = useState("");
-
-  useEffect(() => {
-    if (!buka) return;
-    setDaftar(null);
-    setGalat("");
-    void (async () => {
-      try {
-        const res = await fetch("/api/drive/documents");
-        if (res.status === 401) {
-          onSesiHilang();
-          tutup();
-          return;
-        }
-        if (!res.ok) throw new Error();
-        const data = (await res.json()) as { files?: BerkasDrive[] };
-        setDaftar(data.files ?? []);
-      } catch {
-        setGalat("Gagal memuat daftar dokumen dari Drive.");
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buka]);
-
-  const hapus = async (id: string, nama?: string) => {
-    if (!confirm(`Hapus dokumen "${nama ?? id}" dari Drive?`)) return;
-    try {
-      const res = await fetch(`/api/drive/documents/${id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error();
-      setDaftar((d) => d?.filter((f) => f.id !== id) ?? d);
-    } catch {
-      alert("Gagal menghapus dokumen.");
-    }
-  };
-
-  return (
-    <Modal buka={buka} tutup={tutup} judul="Dokumen tersimpan di Drive">
-      {galat ? <p className="text-stempel text-sm">{galat}</p> : null}
-      {daftar === null && !galat ? (
-        <p className="text-abu text-sm">Memuat...</p>
-      ) : null}
-      {daftar && daftar.length === 0 ? (
-        <p className="text-abu text-sm">
-          Belum ada dokumen pada folder &quot;Kalkulator Nilai Taksiran&quot;.
-          Dokumen akan muncul setelah penyimpanan otomatis pertama.
+        judul="Buka dokumen dari perangkat"
+      >
+        <p className="text-abu">
+          Pilih jenis berkas yang ingin dibuka. Berkas data isian (.json)
+          dikembalikan ke formulir, sedangkan PDF ditampilkan pada penampil
+          PDF.
         </p>
-      ) : null}
-      {daftar && daftar.length > 0 ? (
-        <ul className="divide-y divide-garis-2">
-          {daftar.map((f) => (
-            <li key={f.id} className="flex items-center gap-3 py-2">
-              <div className="mr-auto min-w-0">
-                <p className="text-sm text-tinta-900 truncate">
-                  {f.name?.replace(/\.json$/i, "")}
-                </p>
-                <p className="text-[11px] text-abu">
-                  {f.modifiedTime
-                    ? `Diperbarui ${new Date(f.modifiedTime).toLocaleString("id-ID")}`
-                    : ""}
-                  {f.id === fileIdAktif ? " - dokumen aktif" : ""}
-                </p>
-              </div>
-              <button
-                type="button"
-                className="tombol tombol-garis text-xs"
-                onClick={() => onBuka(f.id)}
-              >
-                Buka
-              </button>
-              <button
-                type="button"
-                className="text-xs text-stempel underline decoration-dotted"
-                onClick={() => void hapus(f.id, f.name)}
-              >
-                Hapus
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </Modal>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            className="tombol tombol-utama justify-center"
+            onClick={() => void bukaDokumenJson()}
+          >
+            Buka data isian (.json)
+          </button>
+          <button
+            type="button"
+            className="tombol tombol-garis justify-center"
+            onClick={() => void bukaPdf()}
+          >
+            Buka PDF (penampil)
+          </button>
+        </div>
+        <p className="mt-4 text-[11px] text-abu leading-relaxed">
+          Pastikan berkas sebelumnya telah disimpan melalui tombol
+          &quot;Simpan&quot; atau &quot;Simpan PDF&quot; pada aplikasi ini.
+        </p>
+      </Modal>
+
+      <Modal
+        buka={pdfLihat !== null}
+        tutup={tutupPdf}
+        judul={pdfLihat ? `PDF: ${pdfLihat.nama}` : "Penampil PDF"}
+        lebar="max-w-5xl"
+      >
+        {pdfLihat ? (
+          <iframe
+            src={pdfLihat.url}
+            title={pdfLihat.nama}
+            className="h-[75vh] w-full border border-garis bg-white"
+          />
+        ) : null}
+      </Modal>
+    </div>
   );
 }

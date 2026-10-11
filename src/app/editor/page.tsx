@@ -10,7 +10,6 @@ export default async function HalamanEditor() {
     <EditorApp
       userEmail={session.user.email ?? ""}
       userName={session.user.name ?? ""}
-      sessionError={session.error}
     />
   );
 }

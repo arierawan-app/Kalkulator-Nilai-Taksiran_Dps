@@ -21,8 +21,9 @@ export default async function Beranda() {
           </p>
         </div>
         <p className="mt-12 max-w-xl border-t border-garis pt-3 text-sm text-abu leading-relaxed">
-          Data akan tersimpan pada Google Drive Anda, maka autentikasi akses
-          email dan Google Drive diperlukan.
+          Seluruh data kertas kerja disimpan di perangkat Anda sendiri, bukan
+          di server. Autentikasi akun Google diperlukan untuk menggunakan
+          aplikasi.
         </p>
       </section>
 
