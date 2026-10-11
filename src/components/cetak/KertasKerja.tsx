@@ -23,6 +23,7 @@ const thBorder: CSSProperties = {
   textAlign: "center",
   fontWeight: "bold",
   verticalAlign: "middle",
+  backgroundColor: "#eeeeee",
 };
 const noBorder: CSSProperties = { padding: "2px 3px", verticalAlign: "top" };
 const tabel: CSSProperties = {
