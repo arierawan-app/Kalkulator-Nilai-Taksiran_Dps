@@ -10,7 +10,12 @@ type OpsiPdf = {
     format?: string | [number, number];
     orientation?: "portrait" | "landscape";
   };
-  pagebreak?: { mode?: string[]; before?: string; after?: string };
+  pagebreak?: {
+    mode?: string[];
+    before?: string;
+    after?: string;
+    avoid?: string[];
+  };
 };
 
 export async function buatBlobPdf(
@@ -19,7 +24,7 @@ export async function buatBlobPdf(
 ): Promise<Blob> {
   const html2pdf = (await import("html2pdf.js")).default;
   const opsi: OpsiPdf = {
-    margin: [8, 8, 10, 8],
+    margin: [12, 12, 12, 12],
     filename: namaFile,
     image: { type: "jpeg", quality: 0.98 },
     html2canvas: {
@@ -29,7 +34,11 @@ export async function buatBlobPdf(
       backgroundColor: "#ffffff",
     },
     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    pagebreak: { mode: ["css", "legacy"], before: ".page-break" },
+    pagebreak: {
+      mode: ["css", "legacy"],
+      before: ".page-break",
+      avoid: ["tr"],
+    },
   };
   return html2pdf().set(opsi).from(element).outputPdf("blob");
 }

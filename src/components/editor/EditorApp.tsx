@@ -437,7 +437,14 @@ export function EditorApp({
         lebar="max-w-4xl"
       >
         <div className="max-h-[75vh] overflow-auto border border-garis bg-white">
-          <div className="mx-auto" style={{ width: "210mm" }}>
+          <div
+            className="mx-auto"
+            style={{
+              width: "210mm",
+              padding: "12mm",
+              boxSizing: "border-box",
+            }}
+          >
             <KertasKerja dok={dokumen} />
           </div>
         </div>
