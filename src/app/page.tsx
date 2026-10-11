@@ -7,8 +7,21 @@ export default async function Beranda() {
   if (session) redirect("/editor");
 
   return (
-    <main className="min-h-screen grid grid-cols-1 min-w-0 lg:grid-cols-[1.15fr_1fr]">
-      <section className="min-w-0 px-8 py-12 lg:px-16 lg:py-20 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-garis">
+    <main className="relative isolate min-h-screen grid grid-cols-1 min-w-0 overflow-hidden lg:grid-cols-[1.15fr_1fr]">
+      <div
+        className="pointer-events-none absolute inset-0 z-0 hidden lg:block"
+        aria-hidden="true"
+      >
+        <Image
+          src="/background_vector.png"
+          alt=""
+          fill
+          sizes="100vw"
+          loading="eager"
+          className="object-contain opacity-[0.22]"
+        />
+      </div>
+      <section className="relative z-10 min-w-0 px-8 py-12 lg:px-16 lg:py-20 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-garis">
         <div>
           <p className="text-sm font-semibold text-kuningan tracking-wide">
             KPKNL Denpasar
@@ -29,12 +42,12 @@ export default async function Beranda() {
             height={1355}
             sizes="(max-width: 768px) calc(100vw - 4rem), 768px"
             loading="eager"
-            className="mx-auto block h-auto w-full max-w-full opacity-[0.62]"
+            className="mx-auto block h-auto w-full max-w-full opacity-[0.62] lg:hidden"
           />
         </div>
       </section>
 
-      <section className="min-w-0 px-8 py-12 lg:px-16 lg:py-20 flex items-center">
+      <section className="relative z-10 min-w-0 px-8 py-12 lg:px-16 lg:py-20 flex items-center">
         <div className="w-full max-w-md mx-auto">
           <div className="kolom-rekap p-8">
             <p className="text-sm text-abu">
