@@ -26,14 +26,14 @@ export function RekapPanel({
   dok,
   temuan,
   onPreview,
-  onSimpanPdf,
+  onCetakPdf,
   onBukaPdf,
   sibuk,
 }: {
   dok: Dokumen;
   temuan: TemuanValidasi[];
   onPreview: () => void;
-  onSimpanPdf: () => void;
+  onCetakPdf: () => void;
   onBukaPdf: () => void;
   sibuk: boolean;
 }) {
@@ -115,10 +115,11 @@ export function RekapPanel({
         <button
           type="button"
           className="tombol tombol-garis w-full justify-center"
-          onClick={onSimpanPdf}
+          onClick={onCetakPdf}
           disabled={!bolehCetak || sibuk}
+          title="Buka dialog cetak browser; pilih Simpan sebagai PDF"
         >
-          Simpan PDF
+          Cetak / Simpan PDF
         </button>
         <button
           type="button"

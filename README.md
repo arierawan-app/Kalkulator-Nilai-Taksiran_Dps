@@ -10,10 +10,11 @@ Tata Cara Penentuan Nilai Taksiran (dokumen referensi tersedia di folder ini:
 - Login Google (OAuth) untuk verifikasi akses. Seluruh data kertas kerja
   disimpan di perangkat pengguna sendiri (local storage browser + berkas
   pilihan pengguna); tidak ada data yang disimpan di server aplikasi.
-- Penyimpanan berkas ke perangkat dengan pop-up pemilihan lokasi
-  (File System Access API pada Chrome/Edge). Pada browser yang belum
-  mendukungnya (mis. Safari/Firefox), berkas otomatis diunduh ke folder
-  unduhan.
+- Data isian disimpan sebagai berkas `.json` ke perangkat dengan pop-up
+  pemilihan lokasi (File System Access API pada Chrome/Edge); pada browser
+  yang belum mendukungnya berkas otomatis diunduh. PDF dicetak dari tampilan
+  kertas kerja yang sama melalui dialog cetak browser; pilih **Simpan sebagai
+  PDF** untuk menyimpannya di perangkat.
 - Draf tersimpan otomatis di perangkat dengan indikator status. Data isian
   dapat dibuka kembali dari berkas `.json`, dan PDF hasil penilaian dapat
   dibuka melalui penampil PDF di dalam aplikasi.
@@ -117,14 +118,14 @@ npm run build      # build produksi
   dengan yang dipakai (skema http/https, port, dan tanpa garis miring di
   akhir), termasuk `http://localhost:3000/api/auth/callback/google` dan
   `https://<domain-vercel>/api/auth/callback/google`.
-- **Data tidak tersimpan ke berkas**: pastikan menekan tombol **Simpan**
-  (data isian) atau **Simpan PDF** lalu pilih lokasi pada pop-up. Draf tetap
-  tersimpan otomatis di browser perangkat tersebut sehingga aman bila aplikasi
-  tertutup, namun draf tidak berpindah ke perangkat/browser lain.
-- **Pop-up pemilihan lokasi tidak muncul**: browser belum mendukung File
-  System Access API (mis. Safari/Firefox). Berkas akan otomatis diunduh ke
-  folder unduhan; gunakan **Buka dokumen -> Buka data isian (.json)** untuk
-  membukanya kembali.
+- **Data isian tidak tersimpan ke berkas**: tekan **Simpan** dan pilih lokasi
+  pada pop-up (atau cek folder unduhan pada browser yang tidak mendukung
+  pemilihan lokasi). Draf tetap tersimpan otomatis di browser perangkat
+  tersebut, namun tidak berpindah ke perangkat/browser lain.
+- **Menyimpan PDF**: tekan **Cetak / Simpan PDF**, lalu di dialog cetak browser
+  pilih **Simpan sebagai PDF**, ukuran kertas A4, skala 100%, dan matikan
+  header/footer browser bila tersedia. Tampilan PDF menggunakan layout kertas
+  kerja yang sama dengan pratinjau aplikasi.
 
 ## Catatan kepatuhan
 

@@ -143,8 +143,63 @@ dialog::backdrop {
   transform: rotate(-1.5deg);
 }
 
+.print-area {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  z-index: -1;
+}
+
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
 @media print {
+  html,
   body {
-    background: #fff;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  .screen-editor {
+    min-height: 0 !important;
+  }
+
+  .screen-editor > :not(.print-area) {
+    display: none !important;
+  }
+
+  .print-area {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    z-index: auto !important;
+    display: block !important;
+    width: 186mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  #kertas-kerja {
+    width: 186mm !important;
+  }
+
+  .page-break {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  .blok-ttd,
+  tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  * {
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
   }
 }

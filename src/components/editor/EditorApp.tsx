@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { SatkerSection } from "./SatkerSection";
 import { PanitiaSection } from "./PanitiaSection";
@@ -11,7 +11,6 @@ import { MerekSection } from "./MerekSection";
 import { RekapPanel } from "./RekapPanel";
 import { Modal } from "./fields";
 import { KertasKerja } from "@/components/cetak/KertasKerja";
-import { buatBlobPdf } from "@/components/cetak/pdf";
 import {
   BERKAS_JSON,
   BERKAS_PDF,
@@ -64,8 +63,6 @@ export function EditorApp({
   const [pdfLihat, setPdfLihat] = useState<{ url: string; nama: string } | null>(
     null
   );
-
-  const lembar = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     try {
@@ -266,36 +263,15 @@ export function EditorApp({
     }
   };
 
-  const pastikanBlob = async (): Promise<Blob | null> => {
-    if (!dokumen || !lembar.current) return null;
-    return buatBlobPdf(lembar.current, namaFilePdf(dokumen));
-  };
-
-  const simpanPdf = async () => {
+  const cetakPdf = () => {
     if (!dokumen) return;
-    setSibuk(true);
-    try {
-      const blob = await pastikanBlob();
-      if (!blob) return;
-      const hasil = await simpanBlobLokal(blob, namaFilePdf(dokumen), BERKAS_PDF);
-      if (!hasil) return;
-      if (hasil.metode === "unduhan") {
-        alert(
-          `Browser ini belum mendukung pemilihan lokasi penyimpanan. PDF diunduh sebagai "${hasil.nama}".`
-        );
-      }
-      setStatus({
-        mode: "saved",
-        teks:
-          hasil.metode === "pilih-lokasi"
-            ? `PDF tersimpan: ${hasil.nama}`
-            : `PDF terunduh: ${hasil.nama}`,
-      });
-    } catch {
-      alert("Gagal membuat atau menyimpan PDF. Coba lagi.");
-    } finally {
-      setSibuk(false);
-    }
+    const judulSebelumnya = document.title;
+    const pulihkanJudul = () => {
+      document.title = judulSebelumnya;
+    };
+    document.title = namaFilePdf(dokumen).replace(/\.pdf$/i, "");
+    window.addEventListener("afterprint", pulihkanJudul, { once: true });
+    window.print();
   };
 
   if (!dokumen) {
@@ -314,7 +290,7 @@ export function EditorApp({
         : "text-white/80";
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen screen-editor">
       <header className="sticky top-0 z-40 bg-tinta-900 text-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3 lg:px-8">
           <div className="mr-auto">
@@ -392,7 +368,7 @@ export function EditorApp({
             temuan={temuan}
             sibuk={sibuk}
             onPreview={() => setBukaPreview(true)}
-            onSimpanPdf={() => void simpanPdf()}
+            onCetakPdf={cetakPdf}
             onBukaPdf={() => void bukaPdf()}
           />
         </div>
@@ -416,20 +392,6 @@ export function EditorApp({
         ))}
       </datalist>
 
-      <div
-        aria-hidden
-        style={{
-          position: "fixed",
-          left: "-10000px",
-          top: 0,
-          zIndex: -1,
-        }}
-      >
-        <div ref={lembar}>
-          <KertasKerja dok={dokumen} />
-        </div>
-      </div>
-
       <Modal
         buka={bukaPreview}
         tutup={() => setBukaPreview(false)}
@@ -452,12 +414,16 @@ export function EditorApp({
           <button
             type="button"
             className="tombol tombol-utama"
-            onClick={() => void simpanPdf()}
+            onClick={cetakPdf}
             disabled={sibuk}
           >
-            Simpan PDF
+            Cetak / Simpan PDF
           </button>
         </div>
+        <p className="mt-3 text-right text-[11px] text-abu">
+          Pada dialog cetak, pilih “Simpan sebagai PDF”, ukuran A4, skala 100%,
+          dan matikan header/footer browser bila tersedia.
+        </p>
       </Modal>
 
       <Modal
@@ -488,7 +454,7 @@ export function EditorApp({
         </div>
         <p className="mt-4 text-[11px] text-abu leading-relaxed">
           Pastikan berkas sebelumnya telah disimpan melalui tombol
-          &quot;Simpan&quot; atau &quot;Simpan PDF&quot; pada aplikasi ini.
+          &quot;Simpan&quot; atau &quot;Cetak / Simpan PDF&quot; pada aplikasi ini.
         </p>
       </Modal>
 
@@ -506,6 +472,9 @@ export function EditorApp({
           />
         ) : null}
       </Modal>
+      <div className="print-area" aria-hidden="true">
+        <KertasKerja dok={dokumen} />
+      </div>
     </div>
   );
 }
