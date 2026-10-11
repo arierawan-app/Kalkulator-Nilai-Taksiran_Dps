@@ -37,7 +37,7 @@ export async function buatBlobPdf(
     pagebreak: {
       mode: ["css", "legacy"],
       before: ".page-break",
-      avoid: ["tr"],
+      avoid: ["tr", ".blok-ttd"],
     },
   };
   return html2pdf().set(opsi).from(element).outputPdf("blob");

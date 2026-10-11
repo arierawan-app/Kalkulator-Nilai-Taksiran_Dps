@@ -14,7 +14,7 @@ import type { Dokumen, MerekRow } from "@/lib/types";
 
 const tdBorder: CSSProperties = {
   border: "1px solid #000",
-  padding: "3px 5px",
+  padding: "4px 5px",
   verticalAlign: "top",
   overflowWrap: "break-word",
 };
@@ -24,7 +24,7 @@ const thBorder: CSSProperties = {
   fontWeight: "bold",
   verticalAlign: "middle",
 };
-const noBorder: CSSProperties = { padding: "1px 3px", verticalAlign: "top" };
+const noBorder: CSSProperties = { padding: "2px 3px", verticalAlign: "top" };
 const tabel: CSSProperties = {
   width: "100%",
   borderCollapse: "collapse",
@@ -33,8 +33,8 @@ const tabel: CSSProperties = {
 const barisAman: CSSProperties = { breakInside: "avoid" };
 const judulSeksi: CSSProperties = {
   fontWeight: "bold",
-  marginTop: "8px",
-  marginBottom: "3px",
+  marginTop: "10px",
+  marginBottom: "4px",
 };
 
 function Kotak({ aktif }: { aktif: boolean }) {
@@ -458,46 +458,60 @@ function LembarPertama({ dok }: { dok: Dokumen }) {
         </tbody>
       </table>
 
-      <table style={{ ...tabel, marginTop: "16px" }}>
-        <colgroup>
-          <col style={{ width: "55%" }} />
-          <col />
-        </colgroup>
-        <tbody>
-          <tr style={barisAman}>
-            <td style={noBorder} />
-            <td style={noBorder}>
-              <div>
-                {panitia.kota}
-                {panitia.tanggal
-                  ? `, ${formatTanggalIndonesia(panitia.tanggal)}`
-                  : ", ........................"}
-              </div>
-              <div style={{ marginTop: "2px" }}>Panitia Penaksir</div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <table style={{ ...tabel, marginTop: "4px" }}>
-        <tbody>
-          <tr style={barisAman}>
-            {panitia.anggota.map((a) => (
-              <td
-                key={a.id}
-                style={{
-                  ...noBorder,
-                  textAlign: "center",
-                  width: `${100 / Math.max(1, panitia.anggota.length)}%`,
-                }}
-              >
-                <div style={{ height: "52px" }} />
-                <div>({a.jabatan})</div>
-                {a.nama ? <div>{a.nama}</div> : null}
+      <div
+        className="blok-ttd"
+        style={{
+          marginTop: "20px",
+          paddingBottom: "12mm",
+          breakInside: "avoid",
+          pageBreakInside: "avoid",
+        }}
+      >
+        <table style={tabel}>
+          <colgroup>
+            <col style={{ width: "55%" }} />
+            <col />
+          </colgroup>
+          <tbody>
+            <tr style={barisAman}>
+              <td style={noBorder} />
+              <td style={noBorder}>
+                <div>
+                  {panitia.kota}
+                  {panitia.tanggal
+                    ? `, ${formatTanggalIndonesia(panitia.tanggal)}`
+                    : ", ........................"}
+                </div>
+                <div style={{ marginTop: "3px" }}>Panitia Penaksir</div>
               </td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
+            </tr>
+          </tbody>
+        </table>
+        <table style={{ ...tabel, marginTop: "8px" }}>
+          <tbody>
+            <tr style={barisAman}>
+              {panitia.anggota.map((a) => (
+                <td
+                  key={a.id}
+                  style={{
+                    ...noBorder,
+                    textAlign: "center",
+                    width: `${100 / Math.max(1, panitia.anggota.length)}%`,
+                  }}
+                >
+                  <div style={{ height: "52px" }} />
+                  <div>({a.jabatan})</div>
+                  {a.nama ? <div>{a.nama}</div> : null}
+                  <div style={{ minHeight: "18px", marginTop: "3px" }}>
+                    {a.nip ? `NIP. ${a.nip}` : ""}
+                  </div>
+                  <div style={{ height: "8px" }} />
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -676,7 +690,8 @@ export function KertasKerja({ dok }: { dok: Dokumen }) {
         backgroundColor: "#ffffff",
         boxSizing: "border-box",
         fontFamily: "Arial, Helvetica, sans-serif",
-        fontSize: "11pt",
+        fontSize: "10pt",
+        lineHeight: 1.3,
         color: "#000",
       }}
     >
