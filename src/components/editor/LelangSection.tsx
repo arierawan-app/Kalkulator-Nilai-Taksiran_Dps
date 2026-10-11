@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Field, Catatan, Modal, PanduanButton } from "./fields";
+import { Field, Catatan, Modal, PanduanButton, InputRupiah } from "./fields";
 import { BATAS, KUTIPAN, TAHAPAN_PENCARIAN, WILAYAH } from "@/lib/ketentuan";
 import type { Dokumen, LelangRow } from "@/lib/types";
 import { cekTahunLelang, infoWilayah, kotaTanpaPerluasan } from "@/lib/validasi";
@@ -58,10 +58,18 @@ export function LelangSection({
     kotaTanpaPerluasan(dok.objek.lokasiObjek) ||
     kotaTanpaPerluasan(dok.objek.kpknl.replace("KPKNL ", ""));
 
-  const ubahWaktu = (row: LelangRow, nomor: number, nilai: number) => {
+  const ubahWaktu = (row: LelangRow, nomor: number, teks: string) => {
+    const nilai = Number(teks) || 0;
     onChangeRow(row.id, { waktuLelang: nilai });
-    const temuan = cekTahunLelang(dok.tahunPenilaian, nilai);
-    if (temuan) setPopupWaktu({ nomor, tahun: nilai });
+    const tahunLengkap = /^\d{4,}$/.test(teks);
+    const temuan = tahunLengkap
+      ? cekTahunLelang(dok.tahunPenilaian, nilai)
+      : null;
+    if (temuan) {
+      setPopupWaktu({ nomor, tahun: nilai });
+    } else {
+      setPopupWaktu((sebelum) => (sebelum?.nomor === nomor ? null : sebelum));
+    }
   };
 
   const tambah = () => {
@@ -150,10 +158,10 @@ export function LelangSection({
       <div className="space-y-4">
         {dok.lelang.map((row, i) => {
           const nomor = i + 1;
-          const temuanWaktu = cekTahunLelang(
-            dok.tahunPenilaian,
-            row.waktuLelang
-          );
+          const temuanWaktu =
+            row.waktuLelang >= 1000
+              ? cekTahunLelang(dok.tahunPenilaian, row.waktuLelang)
+              : null;
           const saran =
             row.namaKPKNL && dok.objek.provinsi
               ? saranWilayah(row.namaKPKNL, dok.objek.provinsi)
@@ -220,14 +228,9 @@ export function LelangSection({
                 </Field>
 
                 <Field label="Harga lelang (Rp)">
-                  <input
-                    type="number"
-                    className="field angka"
-                    value={row.harga || ""}
-                    min={0}
-                    onChange={(e) =>
-                      onChangeRow(row.id, { harga: Number(e.target.value) || 0 })
-                    }
+                  <InputRupiah
+                    nilai={row.harga}
+                    onNilai={(harga) => onChangeRow(row.id, { harga })}
                   />
                 </Field>
                 <Field
@@ -251,9 +254,7 @@ export function LelangSection({
                     value={row.waktuLelang || ""}
                     min={1900}
                     max={2100}
-                    onChange={(e) =>
-                      ubahWaktu(row, nomor, Number(e.target.value) || 0)
-                    }
+                    onChange={(e) => ubahWaktu(row, nomor, e.target.value)}
                   />
                 </Field>
                 <Field label="Kategori lokasi lelang">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, Catatan, PanduanButton } from "./fields";
+import { Field, Catatan, PanduanButton, InputRupiah } from "./fields";
 import { KETERANGAN_MEREK, KUTIPAN } from "@/lib/ketentuan";
 import { saranAdjMerek } from "@/lib/calc";
 import { formatRp } from "@/lib/format";
@@ -75,7 +75,7 @@ export function MerekSection({
             return (
               <div
                 key={m.id}
-                className="grid gap-3 border border-garis bg-white px-4 py-3 sm:grid-cols-[110px_1fr_160px_90px_1fr_auto] sm:items-end"
+                className="grid gap-3 border border-garis bg-white px-4 py-3 sm:grid-cols-[110px_1fr_190px_90px_1fr_auto] sm:items-end"
               >
                 <Field label={`Peran ${i + 1}`}>
                   <select
@@ -102,16 +102,9 @@ export function MerekSection({
                   />
                 </Field>
                 <Field label="Harga baru/harga jual saat ini">
-                  <input
-                    type="number"
-                    className="field angka"
-                    min={0}
-                    value={m.harga || ""}
-                    onChange={(e) =>
-                      onChangeRow(m.id, {
-                        harga: Number(e.target.value) || 0,
-                      })
-                    }
+                  <InputRupiah
+                    nilai={m.harga}
+                    onNilai={(harga) => onChangeRow(m.id, { harga })}
                   />
                 </Field>
                 <div>

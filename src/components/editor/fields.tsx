@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ReactNode,
+} from "react";
+import { formatAngka } from "@/lib/format";
 
 export function Modal({
   buka,
@@ -122,5 +129,62 @@ export function Peringatan({ children }: { children: ReactNode }) {
     <p className="text-xs text-stempel leading-relaxed border-l-2 border-stempel pl-3">
       {children}
     </p>
+  );
+}
+
+export function InputRupiah({
+  nilai,
+  onNilai,
+  className = "field angka",
+  placeholder,
+}: {
+  nilai: number;
+  onNilai: (nilai: number) => void;
+  className?: string;
+  placeholder?: string;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+
+  const ubah = (e: ChangeEvent<HTMLInputElement>) => {
+    const teks = e.target.value;
+    const posisiKursor = e.target.selectionStart ?? teks.length;
+    const digitSebelumKursor = teks
+      .slice(0, posisiKursor)
+      .replace(/\D/g, "").length;
+    const angka = Number(teks.replace(/\D/g, "")) || 0;
+    onNilai(angka);
+    requestAnimationFrame(() => {
+      const el = ref.current;
+      if (!el) return;
+      if (digitSebelumKursor === 0) {
+        el.setSelectionRange(0, 0);
+        return;
+      }
+      const hasil = el.value;
+      let hitung = 0;
+      for (let i = 0; i < hasil.length; i++) {
+        if (/\d/.test(hasil[i])) {
+          hitung += 1;
+          if (hitung === digitSebelumKursor) {
+            el.setSelectionRange(i + 1, i + 1);
+            return;
+          }
+        }
+      }
+      el.setSelectionRange(hasil.length, hasil.length);
+    });
+  };
+
+  return (
+    <input
+      ref={ref}
+      type="text"
+      inputMode="numeric"
+      autoComplete="off"
+      className={className}
+      placeholder={placeholder}
+      value={nilai ? formatAngka(nilai) : ""}
+      onChange={ubah}
+    />
   );
 }
