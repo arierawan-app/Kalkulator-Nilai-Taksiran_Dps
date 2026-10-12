@@ -309,6 +309,15 @@ export function ObjekSection({
               </label>
             ))}
           </div>
+          {objek.dokumen.includes("Lainnya") ? (
+            <input
+              className="field mt-2"
+              value={objek.dokumenLainnya}
+              onChange={(e) => onChange({ dokumenLainnya: e.target.value })}
+              placeholder="Contoh: Surat Keterangan"
+              aria-label="Sebutkan dokumen kepemilikan lainnya"
+            />
+          ) : null}
         </Field>
         <Field label="Pemilik dokumen">
           <input

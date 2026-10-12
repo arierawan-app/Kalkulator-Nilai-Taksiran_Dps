@@ -51,4 +51,22 @@ describe("normalisasiDokumen draf lama", () => {
   it("memakai BPKB sebagai default bila draft tidak memuat dokumen", () => {
     expect(normalisasiDokumen({}).objek.dokumen).toEqual(["BPKB"]);
   });
+
+  it("mengosongkan keterangan Lainnya bila belum ada", () => {
+    const lama = { objek: { dokumen: ["Lainnya"] } };
+    expect(normalisasiDokumen(lama).objek.dokumenLainnya).toBe("");
+    expect(
+      normalisasiDokumen({ objek: { dokumenLainnya: null } }).objek
+        .dokumenLainnya
+    ).toBe("");
+  });
+
+  it("mempertahankan keterangan Lainnya yang tersimpan", () => {
+    const tersimpan = {
+      objek: { dokumen: ["Lainnya"], dokumenLainnya: "Surat Keterangan" },
+    };
+    expect(normalisasiDokumen(tersimpan).objek.dokumenLainnya).toBe(
+      "Surat Keterangan"
+    );
+  });
 });

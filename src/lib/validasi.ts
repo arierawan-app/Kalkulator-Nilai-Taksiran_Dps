@@ -146,6 +146,16 @@ export function validasiDokumen(dok: Dokumen): TemuanValidasi[] {
   if (objek.dokumen.length === 0) {
     temuan.push({ tingkat: "error", bidang: "dokumen", pesan: "Dokumen kepemilikan belum dipilih." });
   }
+  if (
+    objek.dokumen.includes("Lainnya") &&
+    !(objek.dokumenLainnya ?? "").trim()
+  ) {
+    temuan.push({
+      tingkat: "error",
+      bidang: "dokumenLainnya",
+      pesan: "Sebutkan jenis dokumen kepemilikan pada pilihan \"Lainnya\".",
+    });
+  }
   if (kotaTanpaPerluasan(objek.lokasiObjek)) {
     temuan.push({ tingkat: "info", bidang: "lokasiObjek", pesan: KUTIPAN.batamSabang });
   }

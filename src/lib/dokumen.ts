@@ -68,6 +68,7 @@ export function dokumenBaru(): Dokumen {
       cc: null,
       nomorPolisi: "",
       dokumen: ["BPKB"],
+      dokumenLainnya: "",
       pemilikDokumen: "",
       masaBerlaku: "Masih berlaku",
       keteranganMasaBerlaku: "",
@@ -122,6 +123,10 @@ export function normalisasiDokumen(input: unknown): Dokumen {
     objek: {
       ...objekGabung,
       dokumen: normalisasiDokumenKepemilikan(objekGabung.dokumen),
+      dokumenLainnya:
+        typeof objekGabung.dokumenLainnya === "string"
+          ? objekGabung.dokumenLainnya
+          : "",
     },
     lelang:
       Array.isArray(d.lelang) && d.lelang.length > 0

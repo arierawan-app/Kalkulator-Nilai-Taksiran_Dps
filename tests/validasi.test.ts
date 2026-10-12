@@ -62,6 +62,7 @@ function dokumen(partial: Partial<Dokumen> = {}): Dokumen {
       cc: 110,
       nomorPolisi: "DK 1 AA",
       dokumen: ["BPKB"],
+      dokumenLainnya: "",
       pemilikDokumen: "Kementerian X",
       masaBerlaku: "Masih berlaku",
       keteranganMasaBerlaku: "",
@@ -141,6 +142,24 @@ describe("validasiDokumen", () => {
     dok.lelang[0] = row({ adjLokasi: 99, konfirmasiManual: true });
     const errors = validasiDokumen(dok).filter(
       (t) => t.tingkat === "error" && t.pesan.includes("menyimpang")
+    );
+    expect(errors).toHaveLength(0);
+  });
+
+  it("menolak pilihan Lainnya tanpa keterangan", () => {
+    const dok = dokumen();
+    dok.objek.dokumen = ["BPKB", "Lainnya"];
+    dok.objek.dokumenLainnya = "";
+    const pesan = validasiDokumen(dok).map((t) => t.pesan).join(" ");
+    expect(pesan).toContain("Lainnya");
+  });
+
+  it("menerima pilihan Lainnya yang sudah diberi keterangan", () => {
+    const dok = dokumen();
+    dok.objek.dokumen = ["Lainnya"];
+    dok.objek.dokumenLainnya = "Surat Keterangan";
+    const errors = validasiDokumen(dok).filter(
+      (t) => t.tingkat === "error" && t.bidang === "dokumenLainnya"
     );
     expect(errors).toHaveLength(0);
   });

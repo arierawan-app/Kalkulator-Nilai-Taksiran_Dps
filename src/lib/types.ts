@@ -49,6 +49,7 @@ export type Objek = {
   cc: number | null;
   nomorPolisi: string;
   dokumen: DokumenKepemilikan[];
+  dokumenLainnya: string;
   pemilikDokumen: string;
   masaBerlaku: MasaBerlaku;
   keteranganMasaBerlaku: string;

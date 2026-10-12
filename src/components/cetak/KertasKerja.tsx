@@ -200,7 +200,11 @@ function LembarPertama({ dok }: { dok: Dokumen }) {
             <td style={noBorder} colSpan={3}>
               : <Kotak aktif={objek.dokumen.includes("BPKB")} /> BPKB{" "}
               <Kotak aktif={objek.dokumen.includes("STNK")} /> STNK{" "}
-              <Kotak aktif={objek.dokumen.includes("Lainnya")} /> Lainnya ...{" "}
+              <Kotak aktif={objek.dokumen.includes("Lainnya")} /> Lainnya
+              {objek.dokumen.includes("Lainnya") &&
+              objek.dokumenLainnya.trim()
+                ? `: ${objek.dokumenLainnya.trim()}`
+                : " ..."}{" "}
               <Kotak aktif={objek.dokumen.includes("Tidak ada")} /> Tidak ada
             </td>
           </tr>
