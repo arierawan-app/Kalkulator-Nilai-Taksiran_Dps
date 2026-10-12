@@ -500,8 +500,8 @@ function LembarPertama({ dok }: { dok: Dokumen }) {
                     width: `${100 / Math.max(1, panitia.anggota.length)}%`,
                   }}
                 >
-                  <div style={{ height: "52px" }} />
-                  <div>({a.jabatan})</div>
+                  <div style={{ height: "88px" }} />
+                  <div>{a.jabatan}</div>
                   {a.nama ? <div>{a.nama}</div> : null}
                   <div style={{ minHeight: "18px", marginTop: "3px" }}>
                     {a.nip ? `NIP. ${a.nip}` : ""}
