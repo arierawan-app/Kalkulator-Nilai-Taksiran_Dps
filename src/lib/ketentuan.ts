@@ -186,7 +186,7 @@ export const KUTIPAN = {
   tahunPembuatan:
     "Tahun pembuatan kendaraan pada data harga penjualan lelang diutamakan sama dengan objek. Dalam hal tidak terdapat tahun pembuatan yang sama, data yang dapat digunakan adalah data tahun kendaraan dalam rentang 5 (lima) tahun lebih tua sampai dengan 5 (lima) tahun lebih muda dari objek. Prioritas data adalah tahun pembuatan yang terdekat. Contoh: objek tahun 2010, data pembanding antara tahun 2005-2015. (Tata Cara Penentuan Nilai Taksiran, hal. 9-10)",
   jumlahData:
-    "Data harga penjualan lelang yang digunakan sebagai pembanding berjumlah minimal 3 (tiga) data dan maksimal 7 (tujuh) data. Apabila jumlah total data termasuk data tahapan sebelumnya melebihi 7 (tujuh) data, maka data yang digunakan adalah data yang memiliki nilai terendah pada pencarian terakhir, sehingga total data mencapai 7 (tujuh) data. (Tata Cara Penentuan Nilai Taksiran, hal. 9 dan 14)",
+    "Data harga penjualan lelang yang digunakan sebagai pembanding berjumlah minimal 3 (tiga) data dan maksimal 7 (tujuh) data. Apabila jumlah total data termasuk data tahapan sebelumnya melebihi 7 (tujuh) data, maka data yang digunakan adalah data yang memiliki nilai terendah pada pencarian terakhir, sehingga total data mencapai 7 (tujuh) data.",
   wilayahBaliNusra:
     "Untuk rencana lokasi pelaksanaan lelang di Bali dan Nusa Tenggara, data dapat diperluas dengan urutan pencarian: a) Pertama: pada wilayah kerja KPKNL yang berada di satu provinsi; b) Kedua: pada wilayah kerja KPKNL Denpasar, Surabaya, dan Sidoarjo; dan c) Ketiga: pada semua wilayah kerja KPKNL di Indonesia. (Tata Cara Penentuan Nilai Taksiran, hal. 11)",
   batamSabang:

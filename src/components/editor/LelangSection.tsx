@@ -157,6 +157,19 @@ export function LelangSection({
         </div>
       </div>
 
+      <p className="mb-3 text-xs text-abu">
+        Untuk mencari data hasil lelang, silakan klik{" "}
+        <a
+          href="https://sipdjkn.kemenkeu.go.id/sip-permohonan/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-tinta underline underline-offset-2"
+        >
+          tautan
+        </a>
+        .
+      </p>
+
       <div className="mb-5 border border-garis bg-white px-4 py-3">
         <p className="text-xs font-semibold text-tinta mb-1">
           Urutan perluasan wilayah pencarian data - objek di {dok.objek.provinsi}
