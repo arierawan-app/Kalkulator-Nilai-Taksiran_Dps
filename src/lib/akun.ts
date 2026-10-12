@@ -43,15 +43,12 @@ export async function gantiSandi(input: {
 }
 
 export async function simpanLogoProfil(input: {
-  sandi: string;
   logoDataUrl: string;
 }): Promise<HasilAksi> {
   const kode = await kodeDariSesi();
   if (!kode) return { ok: false, pesan: "Sesi berakhir. Silakan masuk kembali." };
 
-  const sandi = input.sandi ?? "";
   const logo = input.logoDataUrl ?? "";
-  if (!sandi) return { ok: false, pesan: "Isi kata sandi saat ini." };
   if (
     !logo.startsWith("data:image/png;base64,") &&
     !logo.startsWith("data:image/jpeg;base64,")
@@ -64,10 +61,9 @@ export async function simpanLogoProfil(input: {
 
   const { data, error } = await klienSupabase().rpc("knt_simpan_logo", {
     p_kode: kode,
-    p_sandi: sandi,
     p_logo: logo,
   });
   if (error) return { ok: false, pesan: "Gagal menyimpan logo. Coba lagi." };
-  if (!data) return { ok: false, pesan: "Kata sandi saat ini tidak cocok." };
+  if (!data) return { ok: false, pesan: "Satker tidak ditemukan." };
   return { ok: true, pesan: "Logo berhasil disimpan." };
 }

@@ -32,7 +32,6 @@ export function PengaturanAkun({
   onLogoBerubah: (logoDataUrl: string) => void;
   onSandiBerubah: () => void;
 }) {
-  const [logoSandi, setLogoSandi] = useState("");
   const [logoBaru, setLogoBaru] = useState("");
   const [logoNama, setLogoNama] = useState("");
   const [statusLogo, setStatusLogo] = useState<HasilAksi | null>(null);
@@ -46,7 +45,6 @@ export function PengaturanAkun({
 
   useEffect(() => {
     if (!buka) return;
-    setLogoSandi("");
     setLogoBaru("");
     setLogoNama("");
     setStatusLogo(null);
@@ -79,17 +77,13 @@ export function PengaturanAkun({
       return;
     }
     setSibukLogo(true);
-    const hasil = await simpanLogoProfil({
-      sandi: logoSandi,
-      logoDataUrl: logoBaru,
-    });
+    const hasil = await simpanLogoProfil({ logoDataUrl: logoBaru });
     setSibukLogo(false);
     setStatusLogo(hasil);
     if (hasil.ok) {
       onLogoBerubah(logoBaru);
       setLogoBaru("");
       setLogoNama("");
-      setLogoSandi("");
     }
   };
 
@@ -179,16 +173,6 @@ export function PengaturanAkun({
                   <span className="text-xs text-abu">{logoNama}</span>
                 ) : null}
               </div>
-              <Field label="Kata sandi saat ini">
-                <input
-                  type="password"
-                  className="field"
-                  value={logoSandi}
-                  onChange={(e) => setLogoSandi(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                />
-              </Field>
               <button
                 type="submit"
                 className="tombol tombol-utama text-xs"

@@ -120,7 +120,7 @@ npm run build      # build produksi
   dengan kata sandi bawaan dan set `must_change_password = true`.
 - **Logo tidak muncul pada kertas kerja**: unggah logo melalui menu
   **Pengaturan** (bukan dari form editor), format PNG/JPEG maksimal 2 MB,
-  dan isi kata sandi saat ini sebagai konfirmasi penyimpanan.
+  lalu tekan **Simpan logo** (tanpa perlu kata sandi).
 - **Data isian tidak tersimpan ke berkas**: tekan **Simpan** dan pilih lokasi
   pada pop-up (atau cek folder unduhan pada browser yang tidak mendukung
   pemilihan lokasi). Draf tetap tersimpan otomatis di browser perangkat
