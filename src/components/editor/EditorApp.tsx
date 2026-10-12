@@ -52,7 +52,7 @@ export function EditorApp({ profil }: { profil: ProfilSatker }) {
   const [dokumen, setDokumen] = useState<Dokumen | null>(null);
   const [status, setStatus] = useState<StatusSimpan>({
     mode: "idle",
-    teks: "Draf tersimpan otomatis di perangkat",
+    teks: "",
   });
   const [sibuk, setSibuk] = useState(false);
   const [bukaPreview, setBukaPreview] = useState(false);
@@ -208,7 +208,7 @@ export function EditorApp({ profil }: { profil: ProfilSatker }) {
         tujuan: "lelang",
       },
     });
-    setStatus({ mode: "idle", teks: "Dokumen baru • draf tersimpan otomatis di perangkat" });
+    setStatus({ mode: "idle", teks: "Dokumen baru" });
   };
 
   const simpanKeBerkas = async () => {
@@ -316,7 +316,9 @@ export function EditorApp({ profil }: { profil: ProfilSatker }) {
             <p className="font-serif font-bold leading-tight">
               Kalkulator Nilai Taksiran BMN
             </p>
-            <p className={`text-[11px] ${statusWarna}`}>{status.teks}</p>
+            {status.teks ? (
+              <p className={`text-[11px] ${statusWarna}`}>{status.teks}</p>
+            ) : null}
           </div>
           <span
             className="hidden max-w-[280px] truncate text-xs text-white/70 md:block"
