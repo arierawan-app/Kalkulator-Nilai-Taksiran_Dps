@@ -475,8 +475,8 @@ export function EditorApp({ profil }: { profil: ProfilSatker }) {
           </button>
         </div>
         <p className="mt-3 text-right text-[11px] text-abu">
-          Pada dialog cetak, pilih “Simpan sebagai PDF”, ukuran A4, skala 100%,
-          dan matikan header/footer browser bila tersedia.
+          Pada dialog cetak, pilih “Simpan sebagai PDF”, ukuran A4, dan skala
+          100%.
         </p>
       </Modal>
 

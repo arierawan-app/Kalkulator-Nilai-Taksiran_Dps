@@ -152,7 +152,7 @@ dialog::backdrop {
 
 @page {
   size: A4 portrait;
-  margin: 12mm;
+  margin: 0;
 }
 
 @media print {
@@ -177,14 +177,21 @@ dialog::backdrop {
     top: auto !important;
     z-index: auto !important;
     display: block !important;
-    width: 186mm !important;
+    width: 210mm !important;
     margin: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
   }
 
   #kertas-kerja {
+    width: 210mm !important;
+  }
+
+  #kertas-kerja > div {
+    box-sizing: border-box !important;
     width: 186mm !important;
+    margin: 0 auto !important;
+    padding: 12mm 0 !important;
   }
 
   .page-break {

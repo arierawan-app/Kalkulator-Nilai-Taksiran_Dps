@@ -126,9 +126,11 @@ npm run build      # build produksi
   pemilihan lokasi). Draf tetap tersimpan otomatis di browser perangkat
   tersebut, namun tidak berpindah ke perangkat/browser lain.
 - **Menyimpan PDF**: tekan **Cetak / Simpan PDF**, lalu di dialog cetak browser
-  pilih **Simpan sebagai PDF**, ukuran kertas A4, skala 100%, dan matikan
-  header/footer browser bila tersedia. Tampilan PDF menggunakan layout kertas
-  kerja yang sama dengan pratinjau aplikasi.
+  pilih **Simpan sebagai PDF**, ukuran kertas A4, dan skala 100%. Margin cetak
+  aplikasi menyembunyikan header/footer browser yang memuat tanggal, judul, dan
+  URL. Jika masih terlihat, nonaktifkan opsi header/footer di dialog cetak.
+  Tampilan PDF menggunakan layout kertas kerja yang sama dengan pratinjau
+  aplikasi.
 
 ## Catatan kepatuhan
 
