@@ -27,14 +27,12 @@ export function RekapPanel({
   temuan,
   onPreview,
   onCetakPdf,
-  onBukaPdf,
   sibuk,
 }: {
   dok: Dokumen;
   temuan: TemuanValidasi[];
   onPreview: () => void;
   onCetakPdf: () => void;
-  onBukaPdf: () => void;
   sibuk: boolean;
 }) {
   const punyaDokumen = dok.objek.dokumen !== "Tidak ada";
@@ -120,14 +118,6 @@ export function RekapPanel({
           title="Buka dialog cetak browser; pilih Simpan sebagai PDF"
         >
           Cetak / Simpan PDF
-        </button>
-        <button
-          type="button"
-          className="tombol tombol-garis w-full justify-center"
-          onClick={onBukaPdf}
-          disabled={sibuk}
-        >
-          Buka PDF
         </button>
       </div>
       <p className="text-[10px] text-abu mt-3 leading-relaxed">

@@ -418,7 +418,6 @@ export function EditorApp({ profil }: { profil: ProfilSatker }) {
             sibuk={sibuk}
             onPreview={() => setBukaPreview(true)}
             onCetakPdf={cetakPdf}
-            onBukaPdf={() => void bukaPdf()}
           />
         </div>
       </main>
