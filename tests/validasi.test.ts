@@ -61,7 +61,7 @@ function dokumen(partial: Partial<Dokumen> = {}): Dokumen {
       tipe: "Revo 110",
       cc: 110,
       nomorPolisi: "DK 1 AA",
-      dokumen: "BPKB",
+      dokumen: ["BPKB"],
       pemilikDokumen: "Kementerian X",
       masaBerlaku: "Masih berlaku",
       keteranganMasaBerlaku: "",

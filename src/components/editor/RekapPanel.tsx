@@ -1,6 +1,10 @@
 "use client";
 
-import { hitungFaktorKondisi, hitungRekap } from "@/lib/calc";
+import {
+  hitungFaktorKondisi,
+  hitungRekap,
+  punyaDokumenKepemilikan,
+} from "@/lib/calc";
 import { formatRp } from "@/lib/format";
 import { ringkasTemuan } from "@/lib/validasi";
 import type { Dokumen, TemuanValidasi } from "@/lib/types";
@@ -35,7 +39,7 @@ export function RekapPanel({
   onCetakPdf: () => void;
   sibuk: boolean;
 }) {
-  const punyaDokumen = dok.objek.dokumen !== "Tidak ada";
+  const punyaDokumen = punyaDokumenKepemilikan(dok.objek.dokumen);
   const faktor = hitungFaktorKondisi(
     dok.satker.tujuan,
     dok.objek.tingkatKerusakan,

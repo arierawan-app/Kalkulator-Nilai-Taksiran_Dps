@@ -7,6 +7,7 @@ import {
   hitungFaktorKondisi,
   hitungRekap,
   klasifikasiKendaraan,
+  punyaDokumenKepemilikan,
 } from "@/lib/calc";
 import { formatRp, formatTanggalIndonesia } from "@/lib/format";
 import { KETERANGAN_MEREK } from "@/lib/ketentuan";
@@ -101,7 +102,7 @@ function Kop({ dok }: { dok: Dokumen }) {
 
 function LembarPertama({ dok }: { dok: Dokumen }) {
   const { objek, satker, panitia } = dok;
-  const punyaDokumen = objek.dokumen !== "Tidak ada";
+  const punyaDokumen = punyaDokumenKepemilikan(objek.dokumen);
   const faktor = hitungFaktorKondisi(
     satker.tujuan,
     objek.tingkatKerusakan,
@@ -197,10 +198,10 @@ function LembarPertama({ dok }: { dok: Dokumen }) {
             <td style={noBorder} />
             <td style={noBorder}>(ii) Dokumen Kepemilikan</td>
             <td style={noBorder} colSpan={3}>
-              : <Kotak aktif={objek.dokumen === "BPKB"} /> BPKB{" "}
-              <Kotak aktif={objek.dokumen === "STNK"} /> STNK{" "}
-              <Kotak aktif={objek.dokumen === "Lainnya"} /> Lainnya ...{" "}
-              <Kotak aktif={objek.dokumen === "Tidak ada"} /> Tidak ada
+              : <Kotak aktif={objek.dokumen.includes("BPKB")} /> BPKB{" "}
+              <Kotak aktif={objek.dokumen.includes("STNK")} /> STNK{" "}
+              <Kotak aktif={objek.dokumen.includes("Lainnya")} /> Lainnya ...{" "}
+              <Kotak aktif={objek.dokumen.includes("Tidak ada")} /> Tidak ada
             </td>
           </tr>
           <tr style={barisAman}>

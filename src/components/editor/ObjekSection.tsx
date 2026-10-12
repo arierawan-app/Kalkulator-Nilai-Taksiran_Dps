@@ -2,11 +2,13 @@
 
 import { Field, Catatan, PanduanButton } from "./fields";
 import { KUTIPAN, PROVINSI_WILAYAH, LABEL_TINGKAT, LABEL_TINGKAT_TANPA_LELANG } from "@/lib/ketentuan";
-import type { Objek } from "@/lib/types";
+import { DOKUMEN_KEPEMILIKAN } from "@/lib/types";
+import type { DokumenKepemilikan, Objek } from "@/lib/types";
 import {
   hitungFaktorKondisi,
   klasifikasiKendaraan,
   labelKelas,
+  punyaDokumenKepemilikan,
 } from "@/lib/calc";
 import { TARIF_TAHUN_PEMBUATAN } from "@/lib/ketentuan";
 import type { TujuanPenjualan } from "@/lib/ketentuan";
@@ -50,8 +52,22 @@ export function ObjekSection({
 }) {
   const cc = objek.cc ?? 0;
   const kelas = cc > 0 ? klasifikasiKendaraan(objek.jenisKendaraan, cc) : null;
-  const punyaDokumen = objek.dokumen !== "Tidak ada";
+  const punyaDokumen = punyaDokumenKepemilikan(objek.dokumen);
   const faktor = hitungFaktorKondisi(tujuan, objek.tingkatKerusakan, punyaDokumen);
+
+  const ubahDokumen = (nilai: DokumenKepemilikan) => {
+    const terpilih = objek.dokumen.includes(nilai);
+    if (nilai === "Tidak ada") {
+      onChange({ dokumen: terpilih ? [] : ["Tidak ada"] });
+      return;
+    }
+    const tanpaTidakAda = objek.dokumen.filter((d) => d !== "Tidak ada");
+    onChange({
+      dokumen: terpilih
+        ? tanpaTidakAda.filter((d) => d !== nilai)
+        : [...tanpaTidakAda, nilai],
+    });
+  };
 
   return (
     <section className="seksi">
@@ -172,6 +188,7 @@ export function ObjekSection({
             className="field"
             value={objek.merek}
             onChange={(e) => onChange({ merek: e.target.value })}
+            placeholder="Contoh: Honda"
           />
         </Field>
 
@@ -180,6 +197,7 @@ export function ObjekSection({
             className="field"
             value={objek.tipe}
             onChange={(e) => onChange({ tipe: e.target.value })}
+            placeholder="Revo 110 cc"
           />
         </Field>
         <Field
@@ -274,25 +292,30 @@ export function ObjekSection({
             placeholder="xx xxxx xx"
           />
         </Field>
-        <Field label="Dokumen kepemilikan">
-          <select
-            className="field"
-            value={objek.dokumen}
-            onChange={(e) =>
-              onChange({ dokumen: e.target.value as Objek["dokumen"] })
-            }
-          >
-            <option value="BPKB">BPKB</option>
-            <option value="STNK">STNK</option>
-            <option value="Lainnya">Lainnya</option>
-            <option value="Tidak ada">Tidak ada</option>
-          </select>
+        <Field label="Dokumen kepemilikan" hint="Dapat dicentang lebih dari satu.">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border border-garis bg-white px-3 py-2">
+            {DOKUMEN_KEPEMILIKAN.map((d) => (
+              <label
+                key={d}
+                className="flex cursor-pointer items-center gap-1.5 text-sm text-tinta-900"
+              >
+                <input
+                  type="checkbox"
+                  className="h-3.5 w-3.5 accent-tinta"
+                  checked={objek.dokumen.includes(d)}
+                  onChange={() => ubahDokumen(d)}
+                />
+                {d}
+              </label>
+            ))}
+          </div>
         </Field>
         <Field label="Pemilik dokumen">
           <input
             className="field"
             value={objek.pemilikDokumen}
             onChange={(e) => onChange({ pemilikDokumen: e.target.value })}
+            placeholder="Nama Kementerian/Lembaga"
           />
         </Field>
 
@@ -313,6 +336,7 @@ export function ObjekSection({
             className="field"
             value={objek.penggunaan}
             onChange={(e) => onChange({ penggunaan: e.target.value })}
+            placeholder="Contoh: Kendaraan Dinas"
           />
         </Field>
         <Field label="Keterangan lain">

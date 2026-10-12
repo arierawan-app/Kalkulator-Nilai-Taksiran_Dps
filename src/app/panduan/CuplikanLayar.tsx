@@ -90,7 +90,7 @@ function LayarDataAwal() {
             <KolomIsian label="Tahun pembuatan" nilai="2021" />
             <KolomIsian label="Kapasitas silinder (cc)" nilai="110" />
             <KolomIsian label="Kondisi / tingkat kerusakan" nilai="Sampai dengan 80%" />
-            <KolomIsian label="Dokumen kepemilikan" nilai="BPKB" />
+            <KolomIsian label="Dokumen kepemilikan" nilai="☑ BPKB   ☑ STNK" />
           </div>
         </section>
       </div>

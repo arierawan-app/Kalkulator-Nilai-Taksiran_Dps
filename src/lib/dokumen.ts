@@ -1,4 +1,10 @@
-import type { Dokumen, LelangRow, MerekRow } from "./types";
+import {
+  DOKUMEN_KEPEMILIKAN,
+  type Dokumen,
+  type DokumenKepemilikan,
+  type LelangRow,
+  type MerekRow,
+} from "./types";
 
 function uid(): string {
   return Math.random().toString(36).slice(2, 10);
@@ -61,7 +67,7 @@ export function dokumenBaru(): Dokumen {
       tipe: "",
       cc: null,
       nomorPolisi: "",
-      dokumen: "BPKB",
+      dokumen: ["BPKB"],
       pemilikDokumen: "",
       masaBerlaku: "Masih berlaku",
       keteranganMasaBerlaku: "",
@@ -82,9 +88,25 @@ export function dokumenBaru(): Dokumen {
   };
 }
 
+export function normalisasiDokumenKepemilikan(
+  input: unknown
+): DokumenKepemilikan[] {
+  const daftar: unknown[] = Array.isArray(input)
+    ? input
+    : input === undefined || input === null
+      ? []
+      : [input];
+  const terpilih = DOKUMEN_KEPEMILIKAN.filter((d) => daftar.includes(d));
+  if (terpilih.includes("Tidak ada") && terpilih.length > 1) {
+    return terpilih.filter((d) => d !== "Tidak ada");
+  }
+  return [...terpilih];
+}
+
 export function normalisasiDokumen(input: unknown): Dokumen {
   const dasar = dokumenBaru();
   const d = (input ?? {}) as Partial<Dokumen>;
+  const objekGabung = { ...dasar.objek, ...d.objek };
   return {
     ...dasar,
     ...d,
@@ -97,7 +119,10 @@ export function normalisasiDokumen(input: unknown): Dokumen {
           ? d.panitia!.anggota
           : dasar.panitia.anggota,
     },
-    objek: { ...dasar.objek, ...d.objek },
+    objek: {
+      ...objekGabung,
+      dokumen: normalisasiDokumenKepemilikan(objekGabung.dokumen),
+    },
     lelang:
       Array.isArray(d.lelang) && d.lelang.length > 0
         ? d.lelang.map((r) => ({

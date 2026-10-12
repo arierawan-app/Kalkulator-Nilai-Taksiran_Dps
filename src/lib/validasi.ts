@@ -143,6 +143,9 @@ export function validasiDokumen(dok: Dokumen): TemuanValidasi[] {
   if (!objek.tahunPembuatan) {
     temuan.push({ tingkat: "error", bidang: "tahunPembuatan", pesan: "Tahun pembuatan objek belum diisi." });
   }
+  if (objek.dokumen.length === 0) {
+    temuan.push({ tingkat: "error", bidang: "dokumen", pesan: "Dokumen kepemilikan belum dipilih." });
+  }
   if (kotaTanpaPerluasan(objek.lokasiObjek)) {
     temuan.push({ tingkat: "info", bidang: "lokasiObjek", pesan: KUTIPAN.batamSabang });
   }

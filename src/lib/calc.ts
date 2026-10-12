@@ -11,7 +11,14 @@ import type {
   TingkatKerusakan,
   TujuanPenjualan,
 } from "./ketentuan";
-import type { HasilBaris, LelangRow, Objek, Rekap, SaranPenyesuaian } from "./types";
+import type {
+  DokumenKepemilikan,
+  HasilBaris,
+  LelangRow,
+  Objek,
+  Rekap,
+  SaranPenyesuaian,
+} from "./types";
 
 export function klasifikasiKendaraan(
   jenis: JenisKendaraan,
@@ -99,6 +106,12 @@ export function nilaiTaksiranBaris(row: LelangRow): number {
 
 export function pembulatanRibuanKeAtas(nilai: number): number {
   return Math.ceil(nilai / 1000) * 1000;
+}
+
+export function punyaDokumenKepemilikan(
+  dokumen: DokumenKepemilikan[]
+): boolean {
+  return dokumen.some((d) => d !== "Tidak ada");
 }
 
 export function hitungFaktorKondisi(

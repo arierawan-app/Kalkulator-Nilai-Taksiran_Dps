@@ -6,7 +6,13 @@ import type {
   WilayahKey,
 } from "./ketentuan";
 
-export type DokumenKepemilikan = "BPKB" | "STNK" | "Lainnya" | "Tidak ada";
+export const DOKUMEN_KEPEMILIKAN = [
+  "BPKB",
+  "STNK",
+  "Lainnya",
+  "Tidak ada",
+] as const;
+export type DokumenKepemilikan = (typeof DOKUMEN_KEPEMILIKAN)[number];
 export type MasaBerlaku = "Masih berlaku" | "Habis masa berlaku";
 
 export type PanitiaAnggota = {
@@ -42,7 +48,7 @@ export type Objek = {
   tipe: string;
   cc: number | null;
   nomorPolisi: string;
-  dokumen: DokumenKepemilikan;
+  dokumen: DokumenKepemilikan[];
   pemilikDokumen: string;
   masaBerlaku: MasaBerlaku;
   keteranganMasaBerlaku: string;
