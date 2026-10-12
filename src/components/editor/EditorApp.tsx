@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
+import Link from "next/link";
 import { SatkerSection } from "./SatkerSection";
 import { PanitiaSection } from "./PanitiaSection";
 import { ObjekSection } from "./ObjekSection";
@@ -326,6 +327,9 @@ export function EditorApp({ profil }: { profil: ProfilSatker }) {
           >
             Rahajeng Rauh, {profilAktif.namaSatker}
           </span>
+          <Link href="/panduan" className="tombol tombol-garis text-xs">
+            Panduan
+          </Link>
           <button
             type="button"
             className="tombol tombol-garis text-xs"

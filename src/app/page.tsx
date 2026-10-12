@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { LoginForm } from "@/components/LoginForm";
 
@@ -67,6 +68,15 @@ export default async function Beranda() {
               satker.
             </p>
             <LoginForm />
+            <div className="mt-5 border-t border-garis pt-4 text-xs text-abu">
+              Bingung mengisi form?{" "}
+              <Link
+                href="/panduan"
+                className="font-semibold text-tinta underline underline-offset-2"
+              >
+                Buka panduan penggunaan
+              </Link>
+            </div>
           </div>
         </div>
       </section>
