@@ -191,6 +191,7 @@ function LayarRekap() {
           <div className={`${styles.summaryLine} ${styles.summaryResult}`}><span>Pembulatan ke atas ribuan</span><strong>Rp 4.317.000</strong></div>
           <div className={styles.previewButton}>Pratinjau kertas kerja</div>
           <div className={styles.printButton}>Cetak / Simpan PDF</div>
+          <div className={styles.wordButton}>Unduh Word (.docx)</div>
         </aside>
       </div>
     </>

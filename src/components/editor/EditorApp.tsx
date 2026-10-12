@@ -18,6 +18,7 @@ import {
   BERKAS_PDF,
   bukaBerkasLokal,
   simpanBlobLokal,
+  unduhBlobLokal,
 } from "@/lib/berkas-lokal";
 import {
   barisLelangKosong,
@@ -25,6 +26,7 @@ import {
   merekRowKosong,
   namaFileDokumen,
   namaFilePdf,
+  namaFileWord,
   normalisasiDokumen,
 } from "@/lib/dokumen";
 import { validasiDokumen } from "@/lib/validasi";
@@ -249,6 +251,26 @@ export function EditorApp({ profil }: { profil: ProfilSatker }) {
     }
   };
 
+  const unduhWord = async () => {
+    if (!dokumen || sibuk) return;
+    setSibuk(true);
+    setStatus({ mode: "saving", teks: "Menyusun dokumen Word..." });
+    try {
+      const { buatBerkasWord } = await import("@/lib/word");
+      const blob = await buatBerkasWord(dokumen);
+      const nama = namaFileWord(dokumen);
+      unduhBlobLokal(blob, nama);
+      setStatus({
+        mode: "saved",
+        teks: `Terunduh: ${nama}`,
+      });
+    } catch {
+      setStatus({ mode: "error", teks: "Gagal membuat dokumen Word." });
+    } finally {
+      setSibuk(false);
+    }
+  };
+
   const bukaDokumenJson = async () => {
     try {
       const file = await bukaBerkasLokal(BERKAS_JSON);
@@ -424,6 +446,7 @@ export function EditorApp({ profil }: { profil: ProfilSatker }) {
             sibuk={sibuk}
             onPreview={() => setBukaPreview(true)}
             onCetakPdf={cetakPdf}
+            onUnduhWord={() => void unduhWord()}
           />
         </div>
       </main>

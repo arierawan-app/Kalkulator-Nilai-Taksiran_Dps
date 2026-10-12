@@ -19,7 +19,9 @@ Tata Cara Penentuan Nilai Taksiran (dokumen referensi tersedia di folder ini:
   pemilihan lokasi (File System Access API pada Chrome/Edge); pada browser
   yang belum mendukungnya berkas otomatis diunduh. PDF dicetak dari tampilan
   kertas kerja yang sama melalui dialog cetak browser; pilih **Simpan sebagai
-  PDF** untuk menyimpannya di perangkat.
+  PDF** untuk menyimpannya di perangkat. Kertas kerja juga dapat diunduh sebagai
+  dokumen Microsoft Word `.docx` dengan tabel dan susunan yang mengikuti
+  pratinjau.
 - Draf tersimpan otomatis di perangkat dengan indikator status. Data isian
   dapat dibuka kembali dari berkas `.json`, dan PDF hasil penilaian dapat
   dibuka melalui penampil PDF di dalam aplikasi.
@@ -37,7 +39,8 @@ Tata Cara Penentuan Nilai Taksiran (dokumen referensi tersedia di folder ini:
   -> seluruh Indonesia) dan pengecualian Kota Batam/Sabang.
 - Output PDF dua lembar menyerupai format template resmi, pembulatan ke atas
   pada ribuan rupiah, dapat disimpan ke perangkat dan dibuka kembali melalui
-  penampil PDF.
+  penampil PDF. Kertas kerja juga dapat diunduh sebagai dokumen Word `.docx`
+  yang dapat diedit dengan susunan tabel mengikuti pratinjau.
 
 ## Struktur
 

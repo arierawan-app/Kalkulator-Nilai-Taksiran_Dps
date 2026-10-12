@@ -31,12 +31,14 @@ export function RekapPanel({
   temuan,
   onPreview,
   onCetakPdf,
+  onUnduhWord,
   sibuk,
 }: {
   dok: Dokumen;
   temuan: TemuanValidasi[];
   onPreview: () => void;
   onCetakPdf: () => void;
+  onUnduhWord: () => void;
   sibuk: boolean;
 }) {
   const punyaDokumen = punyaDokumenKepemilikan(dok.objek.dokumen);
@@ -122,6 +124,15 @@ export function RekapPanel({
           title="Buka dialog cetak browser; pilih Simpan sebagai PDF"
         >
           Cetak / Simpan PDF
+        </button>
+        <button
+          type="button"
+          className="tombol tombol-garis w-full justify-center"
+          onClick={onUnduhWord}
+          disabled={!bolehCetak || sibuk}
+          title="Unduh kertas kerja sebagai dokumen Microsoft Word"
+        >
+          Unduh Word (.docx)
         </button>
       </div>
       <p className="text-[10px] text-abu mt-3 leading-relaxed">

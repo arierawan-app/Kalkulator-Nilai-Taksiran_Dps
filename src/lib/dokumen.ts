@@ -171,6 +171,10 @@ export function namaFilePdf(dok: Dokumen): string {
   return `${nomor} - ${objek}.pdf`;
 }
 
+export function namaFileWord(dok: Dokumen): string {
+  return namaFilePdf(dok).replace(/\.pdf$/i, ".docx");
+}
+
 export function idBaru(): string {
   return uid();
 }

@@ -184,9 +184,13 @@ export default function HalamanPanduan() {
                 <h3>Periksa rekap, lalu simpan</h3>
                 <p>
                   Perbaiki semua temuan berwarna merah. Setelah tidak ada
-                  kesalahan, buka pratinjau atau klik <strong>Cetak / Simpan PDF</strong>.
-                  Pada dialog cetak, pilih <strong>Simpan sebagai PDF</strong>, ukuran
-                  A4, dan skala 100%.
+                  kesalahan, buka pratinjau, klik <strong>Cetak / Simpan PDF</strong>,
+                  atau pilih <strong>Unduh Word (.docx)</strong>. Word berisi tabel
+                  yang dapat diedit dan mengikuti susunan kertas kerja.
+                </p>
+                <p className={styles.smallNote}>
+                  Untuk PDF, pilih <strong>Simpan sebagai PDF</strong>, ukuran A4,
+                  dan skala 100% pada dialog cetak.
                 </p>
                 <p className={styles.smallNote}>
                   Draf tersimpan otomatis di browser ini. Klik <strong>Simpan</strong>{" "}

@@ -69,6 +69,10 @@ function unduhLewatTautan(blob: Blob, nama: string) {
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
+export function unduhBlobLokal(blob: Blob, nama: string) {
+  unduhLewatTautan(blob, nama);
+}
+
 function pilihLewatInput(jenis: JenisBerkas): Promise<File | null> {
   return new Promise((resolve) => {
     const input = document.createElement("input");

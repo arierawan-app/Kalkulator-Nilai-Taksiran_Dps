@@ -574,7 +574,8 @@
 
 .loginButton,
 .previewButton,
-.printButton {
+.printButton,
+.wordButton {
   display: grid;
   min-height: 27px;
   place-items: center;
@@ -863,6 +864,12 @@
 .printButton {
   border: 1px solid #d9d3c6;
   background: #fff;
+  color: #143a5c;
+}
+
+.wordButton {
+  border: 1px solid #c6d3df;
+  background: #e9eff5;
   color: #143a5c;
 }
 
