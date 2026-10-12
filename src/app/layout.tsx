@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Kalkulator Nilai Taksiran BMN - Kendaraan Bermotor",
   description:
     "Kertas kerja analisis penentuan nilai taksiran BMN kendaraan bermotor dengan metode perbandingan data harga penjualan lelang.",
+  icons: {
+    icon: "/melasti.png",
+  },
 };
 
 export default function RootLayout({

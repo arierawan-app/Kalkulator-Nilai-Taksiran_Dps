@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  dokumenBaru,
   normalisasiDokumen,
   normalisasiDokumenKepemilikan,
 } from "@/lib/dokumen";
@@ -43,6 +44,22 @@ describe("punyaDokumenKepemilikan", () => {
 });
 
 describe("normalisasiDokumen draf lama", () => {
+  it("membiarkan penggunaan kendaraan kosong agar placeholder tampil", () => {
+    expect(dokumenBaru().objek.penggunaan).toBe("");
+  });
+
+  it("menghapus nilai contoh lama Kendaraan Dinas saat draft dibuka", () => {
+    const lama = { objek: { penggunaan: "Kendaraan Dinas" } };
+    expect(normalisasiDokumen(lama).objek.penggunaan).toBe("");
+  });
+
+  it("mempertahankan keterangan penggunaan yang diisi pengguna", () => {
+    const tersimpan = { objek: { penggunaan: "Kendaraan operasional" } };
+    expect(normalisasiDokumen(tersimpan).objek.penggunaan).toBe(
+      "Kendaraan operasional"
+    );
+  });
+
   it("mengonversi dokumen kepemilikan tunggal dari draft lama", () => {
     const lama = { objek: { dokumen: "Tidak ada" } };
     expect(normalisasiDokumen(lama).objek.dokumen).toEqual(["Tidak ada"]);

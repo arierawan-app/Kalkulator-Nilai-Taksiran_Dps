@@ -72,7 +72,7 @@ export function dokumenBaru(): Dokumen {
       pemilikDokumen: "",
       masaBerlaku: "Masih berlaku",
       keteranganMasaBerlaku: "",
-      penggunaan: "Kendaraan Dinas",
+      penggunaan: "",
       keteranganLain: "",
       warna: "",
       tahunPembuatan: tahun - 10,
@@ -127,6 +127,12 @@ export function normalisasiDokumen(input: unknown): Dokumen {
         typeof objekGabung.dokumenLainnya === "string"
           ? objekGabung.dokumenLainnya
           : "",
+      penggunaan:
+        objekGabung.penggunaan === "Kendaraan Dinas"
+          ? ""
+          : typeof objekGabung.penggunaan === "string"
+            ? objekGabung.penggunaan
+            : "",
     },
     lelang:
       Array.isArray(d.lelang) && d.lelang.length > 0
