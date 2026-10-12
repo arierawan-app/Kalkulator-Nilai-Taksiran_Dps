@@ -10,6 +10,7 @@ export function LoginForm() {
   const router = useRouter();
   const [kode, setKode] = useState("");
   const [sandi, setSandi] = useState("");
+  const [tampilkanSandi, setTampilkanSandi] = useState(false);
   const [galat, setGalat] = useState("");
   const [sibuk, setSibuk] = useState(false);
 
@@ -49,7 +50,7 @@ export function LoginForm() {
             className="field angka"
             value={kode}
             onChange={(e) => setKode(e.target.value)}
-            placeholder="Contoh: 004012200579001000KD"
+            placeholder="20 Digit Kode Satker"
             autoComplete="username"
             autoCapitalize="characters"
             spellCheck={false}
@@ -57,15 +58,63 @@ export function LoginForm() {
           />
         </Field>
         <Field label="Kata Sandi">
-          <input
-            type="password"
-            className="field"
-            value={sandi}
-            onChange={(e) => setSandi(e.target.value)}
-            placeholder="Kata sandi"
-            autoComplete="current-password"
-            required
-          />
+          <div className="relative">
+            <input
+              type={tampilkanSandi ? "text" : "password"}
+              className="field pr-10"
+              value={sandi}
+              onChange={(e) => setSandi(e.target.value)}
+              placeholder="Kata sandi"
+              autoComplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setTampilkanSandi((v) => !v)}
+              className="absolute inset-y-0 right-0 my-auto mr-2 flex h-7 w-7 items-center justify-center rounded-sm text-abu hover:text-tinta"
+              aria-label={
+                tampilkanSandi
+                  ? "Sembunyikan kata sandi"
+                  : "Tampilkan kata sandi"
+              }
+              title={
+                tampilkanSandi
+                  ? "Sembunyikan kata sandi"
+                  : "Tampilkan kata sandi"
+              }
+            >
+              {tampilkanSandi ? (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                  aria-hidden="true"
+                >
+                  <path d="M3 3l18 18" />
+                  <path d="M10.6 10.6a2 2 0 002.8 2.8" />
+                  <path d="M9.9 5.2A9.9 9.9 0 0112 5c6.2 0 9.5 7 9.5 7a16.9 16.9 0 01-3.6 4.5M6.8 6.8A16.6 16.6 0 002.5 12s3.3 7 9.5 7c1.5 0 2.8-.4 4-1" />
+                </svg>
+              ) : (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                  aria-hidden="true"
+                >
+                  <path d="M2.5 12s3.3-7 9.5-7 9.5 7 9.5 7-3.3 7-9.5 7-9.5-7-9.5-7z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              )}
+            </button>
+          </div>
         </Field>
       </div>
       {galat ? (

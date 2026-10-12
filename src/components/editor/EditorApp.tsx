@@ -322,7 +322,7 @@ export function EditorApp({ profil }: { profil: ProfilSatker }) {
             className="hidden max-w-[280px] truncate text-xs text-white/70 md:block"
             title={`${profilAktif.namaSatker} (${profilAktif.kodeSatker})`}
           >
-            {profilAktif.kodeSatker}
+            Rahajeng Rauh, {profilAktif.namaSatker}
           </span>
           <button
             type="button"

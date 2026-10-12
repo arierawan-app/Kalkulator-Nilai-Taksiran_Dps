@@ -24,9 +24,19 @@ export default async function Beranda() {
       </div>
       <section className="relative z-10 min-w-0 px-8 py-12 lg:px-16 lg:py-20 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-garis">
         <div>
-          <p className="text-sm font-semibold text-kuningan tracking-wide">
-            KPKNL Denpasar
-          </p>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/melasti.png"
+              alt="Logo Melasti KPKNL Denpasar"
+              width={112}
+              height={108}
+              priority
+              className="h-12 w-auto shrink-0 lg:h-14"
+            />
+            <p className="font-serif text-2xl font-bold tracking-wide text-kuningan lg:text-3xl">
+              KPKNL Denpasar
+            </p>
+          </div>
           <h1 className="font-serif text-4xl lg:text-5xl font-bold text-tinta-900 mt-4 leading-tight max-w-xl">
             Kalkulator Nilai Taksiran Kendaraan Bermotor
           </h1>

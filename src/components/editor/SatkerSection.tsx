@@ -16,7 +16,7 @@ export function SatkerSection({
         <span className="seksi-nomor">A.</span> Identitas Satuan Kerja
       </h2>
       <div className="grid gap-5 md:grid-cols-[220px_1fr]">
-        <Field label="Logo Kementerian/Lembaga (PNG/JPEG)">
+        <Field label="Logo Kementerian/Lembaga">
           <div className="flex items-center gap-3">
             <div className="h-20 w-20 border border-dashed border-garis bg-white flex items-center justify-center overflow-hidden">
               {satker.logoDataUrl ? (
@@ -33,8 +33,7 @@ export function SatkerSection({
               )}
             </div>
             <p className="max-w-[190px] text-[11px] leading-relaxed text-abu">
-              Upload logo di User Setting (menu Pengaturan pada header
-              aplikasi).
+              Upload logo di Pengaturan
             </p>
           </div>
         </Field>
