@@ -10,6 +10,7 @@ import { PenyesuaianSection } from "./PenyesuaianSection";
 import { MerekSection } from "./MerekSection";
 import { RekapPanel } from "./RekapPanel";
 import { Modal } from "./fields";
+import { PengaturanAkun } from "./PengaturanAkun";
 import { KertasKerja } from "@/components/cetak/KertasKerja";
 import {
   BERKAS_JSON,
@@ -32,6 +33,7 @@ import type {
   MerekRow,
   Objek,
   Panitia,
+  ProfilSatker,
   Satker,
 } from "@/lib/types";
 import kpknlData from "@/data/kpknl.json";
@@ -45,13 +47,8 @@ type StatusSimpan = {
   teks: string;
 };
 
-export function EditorApp({
-  userEmail,
-  userName,
-}: {
-  userEmail: string;
-  userName: string;
-}) {
+export function EditorApp({ profil }: { profil: ProfilSatker }) {
+  const [profilAktif, setProfilAktif] = useState<ProfilSatker>(profil);
   const [dokumen, setDokumen] = useState<Dokumen | null>(null);
   const [status, setStatus] = useState<StatusSimpan>({
     mode: "idle",
@@ -60,21 +57,34 @@ export function EditorApp({
   const [sibuk, setSibuk] = useState(false);
   const [bukaPreview, setBukaPreview] = useState(false);
   const [bukaDokumen, setBukaDokumen] = useState(false);
+  const [bukaPengaturan, setBukaPengaturan] = useState(false);
   const [pdfLihat, setPdfLihat] = useState<{ url: string; nama: string } | null>(
     null
   );
 
   useEffect(() => {
+    let dasar: Dokumen;
     try {
       const tersimpan = localStorage.getItem(KUNCI_DRAF);
-      if (tersimpan) {
-        setDokumen(normalisasiDokumen(JSON.parse(tersimpan)));
-        return;
-      }
+      dasar = tersimpan
+        ? normalisasiDokumen(JSON.parse(tersimpan))
+        : dokumenBaru();
     } catch {
       /* abaikan draft rusak */
+      dasar = dokumenBaru();
     }
-    setDokumen(dokumenBaru());
+    setDokumen({
+      ...dasar,
+      satker: {
+        ...dasar.satker,
+        namaKementerian:
+          dasar.satker.namaKementerian || profil.namaKementerian,
+        namaSatker: dasar.satker.namaSatker || profil.namaSatker,
+        logoDataUrl: profil.logoDataUrl || dasar.satker.logoDataUrl,
+      },
+    });
+    // Profil berasal dari sesi login dan tidak berubah selama sesi berjalan.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -188,7 +198,16 @@ export function EditorApp({
       )
     )
       return;
-    setDokumen(dokumenBaru());
+    setDokumen({
+      ...dokumenBaru(),
+      satker: {
+        logoDataUrl: profilAktif.logoDataUrl,
+        namaKementerian: profilAktif.namaKementerian,
+        namaSatker: profilAktif.namaSatker,
+        nomorKertasKerja: "",
+        tujuan: "lelang",
+      },
+    });
     setStatus({ mode: "idle", teks: "Dokumen baru • draf tersimpan otomatis di perangkat" });
   };
 
@@ -299,7 +318,12 @@ export function EditorApp({
             </p>
             <p className={`text-[11px] ${statusWarna}`}>{status.teks}</p>
           </div>
-          <span className="hidden text-xs text-white/70 md:block">{userName || userEmail}</span>
+          <span
+            className="hidden max-w-[280px] truncate text-xs text-white/70 md:block"
+            title={`${profilAktif.namaSatker} (${profilAktif.kodeSatker})`}
+          >
+            {profilAktif.kodeSatker}
+          </span>
           <button
             type="button"
             className="tombol tombol-garis text-xs"
@@ -324,6 +348,13 @@ export function EditorApp({
           </button>
           <button
             type="button"
+            className="tombol tombol-garis text-xs"
+            onClick={() => setBukaPengaturan(true)}
+          >
+            Pengaturan
+          </button>
+          <button
+            type="button"
             className="tombol text-xs text-white/80 hover:text-white"
             onClick={() => signOut({ callbackUrl: "/" })}
           >
@@ -331,6 +362,24 @@ export function EditorApp({
           </button>
         </div>
       </header>
+
+      {profilAktif.mustChangePassword ? (
+        <div className="border-b border-kuningan/40 bg-kuningan/10">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 text-xs text-tinta-900 lg:px-8">
+            <span>
+              Anda masih menggunakan kata sandi bawaan. Demi keamanan, ganti
+              kata sandi melalui menu Pengaturan.
+            </span>
+            <button
+              type="button"
+              className="font-semibold text-tinta-700 underline decoration-dotted underline-offset-2"
+              onClick={() => setBukaPengaturan(true)}
+            >
+              Buka Pengaturan
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <main className="mx-auto grid max-w-7xl gap-8 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_330px] lg:px-8">
         <div className="space-y-8">
@@ -472,6 +521,19 @@ export function EditorApp({
           />
         ) : null}
       </Modal>
+      <PengaturanAkun
+        buka={bukaPengaturan}
+        tutup={() => setBukaPengaturan(false)}
+        profil={profilAktif}
+        onLogoBerubah={(logoDataUrl) => {
+          setProfilAktif((p) => ({ ...p, logoDataUrl }));
+          updateSatker({ logoDataUrl });
+        }}
+        onSandiBerubah={() => {
+          setProfilAktif((p) => ({ ...p, mustChangePassword: false }));
+        }}
+      />
+
       <div className="print-area" aria-hidden="true">
         <KertasKerja dok={dokumen} />
       </div>

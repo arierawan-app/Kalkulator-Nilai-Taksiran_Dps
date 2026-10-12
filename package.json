@@ -13,6 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.3",
     "next": "^16.4.0",
     "next-auth": "5.0.0-beta.32",
     "react": "^19.3.0",

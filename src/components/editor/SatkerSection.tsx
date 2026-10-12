@@ -10,21 +10,6 @@ export function SatkerSection({
   satker: Satker;
   onChange: (patch: Partial<Satker>) => void;
 }) {
-  const unggahLogo = (file: File | undefined) => {
-    if (!file) return;
-    if (!["image/png", "image/jpeg"].includes(file.type)) {
-      alert("Logo harus berupa file PNG atau JPEG.");
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Ukuran logo melebihi 2 MB. Gunakan file yang lebih kecil.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onloadend = () => onChange({ logoDataUrl: String(reader.result) });
-    reader.readAsDataURL(file);
-  };
-
   return (
     <section className="seksi">
       <h2 className="font-serif text-lg font-bold text-tinta-900 mb-4">
@@ -47,26 +32,10 @@ export function SatkerSection({
                 </span>
               )}
             </div>
-            <div className="flex flex-col gap-2">
-              <label className="tombol tombol-garis text-xs px-2.5 py-1.5 cursor-pointer">
-                Pilih file
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg"
-                  className="hidden"
-                  onChange={(e) => unggahLogo(e.target.files?.[0])}
-                />
-              </label>
-              {satker.logoDataUrl ? (
-                <button
-                  type="button"
-                  className="text-xs text-stempel underline decoration-dotted"
-                  onClick={() => onChange({ logoDataUrl: "" })}
-                >
-                  Hapus logo
-                </button>
-              ) : null}
-            </div>
+            <p className="max-w-[190px] text-[11px] leading-relaxed text-abu">
+              Upload logo di User Setting (menu Pengaturan pada header
+              aplikasi).
+            </p>
           </div>
         </Field>
 
@@ -118,8 +87,9 @@ export function SatkerSection({
       </div>
       <div className="mt-3">
         <Catatan>
-          Logo dan nama satker digunakan pada kop kertas kerja PDF (menyerupai
-          format kertas kerja analisis penentuan nilai taksiran).
+          Nama kementerian/lembaga dan nama satuan kerja terisi otomatis dari
+          Kode Satker saat masuk. Logo diunggah melalui menu Pengaturan (User
+          Setting) dan digunakan pada kop kertas kerja PDF.
         </Catatan>
       </div>
     </section>

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
-import { auth, signIn } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+import { LoginForm } from "@/components/LoginForm";
 
 export default async function Beranda() {
   const session = await auth();
@@ -51,19 +52,11 @@ export default async function Beranda() {
         <div className="w-full max-w-md mx-auto">
           <div className="kolom-rekap p-8">
             <p className="text-sm text-abu">
-              Masuk dengan akun Google untuk mulai menyusun kertas kerja.
+              Masuk dengan Kode Satker untuk mulai menyusun kertas kerja. Nama
+              kementerian/lembaga dan satuan kerja terisi otomatis dari data
+              satker.
             </p>
-            <form
-              className="mt-6"
-              action={async () => {
-                "use server";
-                await signIn("google", { redirectTo: "/editor" });
-              }}
-            >
-              <button type="submit" className="tombol tombol-utama w-full justify-center py-3">
-                Masuk dengan Google
-              </button>
-            </form>
+            <LoginForm />
           </div>
         </div>
       </section>

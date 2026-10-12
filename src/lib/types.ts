@@ -93,6 +93,14 @@ export type Dokumen = {
   updatedAt: string;
 };
 
+export type ProfilSatker = {
+  kodeSatker: string;
+  namaSatker: string;
+  namaKementerian: string;
+  logoDataUrl: string;
+  mustChangePassword: boolean;
+};
+
 export type Kpknl = {
   nama: string;
   provinsi: string;

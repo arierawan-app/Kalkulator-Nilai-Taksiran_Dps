@@ -7,9 +7,14 @@ Tata Cara Penentuan Nilai Taksiran (dokumen referensi tersedia di folder ini:
 
 ## Fitur
 
-- Login Google (OAuth) untuk verifikasi akses. Seluruh data kertas kerja
+- Login dengan Kode Satker (nama pengguna) dan kata sandi melalui Supabase.
+  Kata sandi bawaan saat login pertama adalah `KNL.1401` dan dapat diganti
+  kapan saja melalui menu **Pengaturan** bersama unggah logo
+  kementerian/lembaga. Nama kementerian/lembaga dan nama satuan kerja terisi
+  otomatis dari data master satker saat masuk. Seluruh data kertas kerja
   disimpan di perangkat pengguna sendiri (local storage browser + berkas
-  pilihan pengguna); tidak ada data yang disimpan di server aplikasi.
+  pilihan pengguna); tidak ada data kertas kerja yang disimpan di server
+  aplikasi.
 - Data isian disimpan sebagai berkas `.json` ke perangkat dengan pop-up
   pemilihan lokasi (File System Access API pada Chrome/Edge); pada browser
   yang belum mendukungnya berkas otomatis diunduh. PDF dicetak dari tampilan
@@ -18,7 +23,8 @@ Tata Cara Penentuan Nilai Taksiran (dokumen referensi tersedia di folder ini:
 - Draf tersimpan otomatis di perangkat dengan indikator status. Data isian
   dapat dibuka kembali dari berkas `.json`, dan PDF hasil penilaian dapat
   dibuka melalui penampil PDF di dalam aplikasi.
-- Form lengkap: identitas satker + logo, Panitia Penaksir, objek dan fisik
+- Form lengkap: identitas satker (logo diunggah melalui Pengaturan
+  Pengguna), Panitia Penaksir, objek dan fisik
   kendaraan (termasuk cc untuk klasifikasi low/middle/high-end), data hasil
   lelang, penyesuaian manual dengan nilai ketentuan sebagai panduan, dan
   perhitungan penyesuaian merek (Fpm) sebagai Lembar Kedua.
@@ -36,48 +42,49 @@ Tata Cara Penentuan Nilai Taksiran (dokumen referensi tersedia di folder ini:
 ## Struktur
 
 ```
-src/app                  halaman (landing, editor) dan API route autentikasi
-src/components/editor    komponen form, panduan, rekap
+src/app                  halaman (landing + login, editor) dan API route
+                         autentikasi
+src/components/editor    komponen form, pengaturan pengguna, panduan, rekap
 src/components/cetak     template kertas kerja + util PDF
-src/lib                  fungsi perhitungan, validasi, ketentuan, auth,
-                         penyimpanan lokal
+src/lib                  fungsi perhitungan, validasi, ketentuan, auth
+                         (Supabase), akun/profil, penyimpanan lokal
 src/data/kpknl.json      daftar KPKNL per provinsi (sumber publik DJKN)
-tests                    unit test perhitungan & validasi (vitest)
+src/types                augmentasi tipe sesi next-auth
+tests                    unit test perhitungan, validasi & akun (vitest)
 legacy/index.html        prototipe lama (arsip)
 ```
 
 ## Prasyarat
 
 - Node.js 20+ (disarankan 22)
-- Akun Google Cloud untuk OAuth login (gratis). Google Drive API tidak
-  diperlukan.
+- Proyek Supabase (gratis) untuk akun satker: tabel `knt_satker`
+  (data master dari spreadsheet Kode Satker: kolom B, C, E), `knt_users`
+  (hash kata sandi + logo), dan fungsi `knt_login`, `knt_profil`,
+  `knt_ganti_sandi`, `knt_simpan_logo`. Semua sudah dibuat pada proyek
+  Supabase `cockpit-bmn`; aplikasi hanya butuh URL dan publishable/anon key.
 
-## 1. Menyiapkan Google OAuth (sekali saja)
+## 1. Menyiapkan Supabase (sekali saja)
 
-1. Buka https://console.cloud.google.com dan buat project baru
-   (mis. `kalkulator-nilai-taksiran`).
-2. Menu **APIs & Services > OAuth consent screen**:
-   - Pilih **External**, isi nama aplikasi, email support, dan email developer.
-   - Pada bagian **Audience**, tambahkan akun Google pengguna di **Test users**
-     (mis. akun DJPb Anda). Selama status masih **Testing**, hanya akun uji
-     yang dapat login. Aplikasi hanya memakai scope dasar email/profil sehingga
-     tidak memerlukan verifikasi Google.
-3. Menu **APIs & Services > Credentials > Create credentials > OAuth client ID**:
-   - Application type: **Web application**.
-   - **Authorized JavaScript origins**:
-     - `http://localhost:3000`
-     - `https://<domain-vercel-anda>` (isi setelah deploy)
-   - **Authorized redirect URIs**:
-     - `http://localhost:3000/api/auth/callback/google`
-     - `https://<domain-vercel-anda>/api/auth/callback/google`
-4. Simpan **Client ID** dan **Client Secret**.
+Skema dan data akun sudah tersedia pada proyek `cockpit-bmn`:
+
+1. `knt_satker` berisi 975 Kode Satker beserta Nama UAKPB dan K/L dari
+   spreadsheet Kode Satker.
+2. `knt_users` berisi satu akun per Kode Satker dengan kata sandi bawaan
+   `KNL.1401` (hash bcrypt pgcrypto) dan `must_change_password = true`.
+3. Row Level Security aktif tanpa policy; seluruh akses hanya melalui fungsi
+   SECURITY DEFINER (`knt_login`, `knt_profil`, `knt_ganti_sandi`,
+   `knt_simpan_logo`).
+
+Ambil **Project URL** dan **publishable/anon key** dari dashboard Supabase
+(Project Settings > API) untuk dipakai sebagai `SUPABASE_URL` dan
+`SUPABASE_ANON_KEY`.
 
 ## 2. Menjalankan lokal
 
 ```bash
 npm install
 cp .env.example .env.local
-# isi AUTH_SECRET (openssl rand -base64 32), AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET
+# isi AUTH_SECRET (openssl rand -base64 32), SUPABASE_URL, SUPABASE_ANON_KEY
 npm run dev
 # buka http://localhost:3000
 ```
@@ -96,28 +103,24 @@ npm run build      # build produksi
    terdeteksi otomatis sebagai Next.js; tidak perlu mengubah build settings).
 2. Tambahkan Environment Variables pada project:
    - `AUTH_SECRET`
-   - `AUTH_GOOGLE_ID`
-   - `AUTH_GOOGLE_SECRET`
-3. Deploy, lalu salin domain `*.vercel.app` yang diperoleh dan tambahkan
-   `https://<domain>/api/auth/callback/google` pada Authorized redirect URIs
-   di Google Cloud Console (langkah 1.3). Deploy ulang bila perlu.
-4. Buka domain Vercel, login dengan akun Google yang terdaftar sebagai test
-   user, lalu mulai menyusun kertas kerja.
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+3. Deploy, lalu buka domain Vercel.
+4. Login dengan Kode Satker (kata sandi bawaan `KNL.1401`), ganti kata sandi
+   melalui menu **Pengaturan**, unggah logo kementerian/lembaga, lalu mulai
+   menyusun kertas kerja.
 
 ## Pemecahan masalah umum
 
-- **"has not completed the Google verification process ... can only be
-  accessed by developer-approved testers"**: aplikasi masih berstatus
-  **Testing** dan akun yang dipakai login belum masuk daftar test user.
-  Perbaikan: OAuth consent screen -> **Audience -> Test users -> Add users**,
-  masukkan alamat Gmail yang persis sama dengan akun yang dipakai login
-  (tunggu 1-5 menit, lalu coba lagi / gunakan jendela incognito). Solusi
-  permanen: klik **Publish app** pada OAuth consent screen agar semua akun
-  dapat login.
-- **redirect_uri_mismatch**: URI di Google Cloud Console harus sama persis
-  dengan yang dipakai (skema http/https, port, dan tanpa garis miring di
-  akhir), termasuk `http://localhost:3000/api/auth/callback/google` dan
-  `https://<domain-vercel>/api/auth/callback/google`.
+- **"Kode Satker atau kata sandi salah"**: pastikan Kode Satker persis seperti
+  pada data master (tanpa spasi; huruf besar/kecil tidak berpengaruh) dan kata
+  sandi benar. Pada login pertama gunakan kata sandi bawaan `KNL.1401`.
+  Bila lupa kata sandi, minta administrator mengatur ulang: perbarui
+  `password_hash` pada tabel `knt_users` (Supabase) memakai `crypt` pgcrypto
+  dengan kata sandi bawaan dan set `must_change_password = true`.
+- **Logo tidak muncul pada kertas kerja**: unggah logo melalui menu
+  **Pengaturan** (bukan dari form editor), format PNG/JPEG maksimal 2 MB,
+  dan isi kata sandi saat ini sebagai konfirmasi penyimpanan.
 - **Data isian tidak tersimpan ke berkas**: tekan **Simpan** dan pilih lokasi
   pada pop-up (atau cek folder unduhan pada browser yang tidak mendukung
   pemilihan lokasi). Draf tetap tersimpan otomatis di browser perangkat
